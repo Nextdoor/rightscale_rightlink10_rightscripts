@@ -1,0 +1,12 @@
+*.swn
+*.swo
+*.swp
+.pushrc*
+*~
+*.bak
+*~
+*.lock
+*#
+.#*
+.python-version
+*.pyc
