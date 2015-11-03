@@ -1,0 +1,6 @@
+language: python
+bundler_args: --without development
+before_install:
+python:
+  - 3.4
+script: invoke test

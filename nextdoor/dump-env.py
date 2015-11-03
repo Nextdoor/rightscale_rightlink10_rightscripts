@@ -1,14 +1,14 @@
-#! /usr/bin/sudo /usr/bin/python
+#! /usr/bin/sudo /usr/bin/python3
 
 # ---
 # RightScript Name: dump-env
-# Description: 
-# Packages: 
-# ...
-# 
+# Description:
+#   Dump the shell environment for debugging purposes iff the shell environment
+#   has 'DEBUG' set to any value.
+# Parameters:
+#   - DEBUG
+#
 
-import sys
-sys.path.append('./lib')
-import utils
+from lib.python import utils
 
 utils.dump_environment()

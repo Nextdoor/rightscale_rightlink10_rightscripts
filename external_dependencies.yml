@@ -1,0 +1,19 @@
+---
+repos:
+
+  kingpin:
+    type: git
+    source: https://github.com/nextdoor/kingpin
+    ref: stable
+    destination: ./nextdoor/lib/python/kingpin
+    prep: >
+      (virtualenv -p /usr/bin/python2.7 ./nextdoor/lib/python/kingpin &&
+      cd ./nextdoor/lib/python/kingpin &&
+      /bin/bash -c "source ./bin/activate && make kingpin.zip && deactivate && mv kingpin.zip ..")
+    persist: false
+
+  storage-scripts:
+    type: git
+    source: https://github.com/nextdoor/storage_scripts
+    ref: v1.0.0
+    destination: ./nextdoor/lib/shell/storage-scripts
