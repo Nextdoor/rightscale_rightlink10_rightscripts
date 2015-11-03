@@ -146,5 +146,112 @@ attribute "SERVER_NAME",
           :require => "optional",
           :type => "string",
           :recipes => ['nextdoor:dump-env', 'nextdoor::hostname']
+
+attribute "PUPPET_PACKAGE_VERSION",
+          :display_name => "PUPPET_PACKAGE_VERSION",
+          :description  => "The Puppet version to install (apt package version number)",
+          :required     => "optional",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent"]
+
+attribute "CUSTOM_PUPPET_FACTS",
+          :display_name => "CUSTOM_PUPPET_FACTS",
+          :description  =>
+          "A list of key=value custom puppet facts that will be stored in " +
+          "/etc/facter/facts.d/nd-puppet.txt and available to Puppet as " +
+          "facts for your manifest compilation. eg: my_cname=foobar",
+          :required     => "optional",
+          :type         => "array",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_NODE",
+          :display_name => "PUPPET_NODE",
+          :description  =>
+          "Name to pass to the Puppet server as the Node Name.\n" +
+          "Only used if nd-puppet/config/node_name is 'facter' and " +
+          "nd-puppet/config/node_name_fact is 'puppet_node'.",
+          :required     => "recommended",
+          :default      => nil,
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_NODE_NAME",
+          :display_name => "PUPPET_NODE_NAME",
+          :description  =>
+          "What node_name supplier to use? Either 'cert' or 'facter'. " +
+          "If 'facter' is used (default) then the nd-puppet/config/" +
+          "puppet_node fact is used as the node name when contacting the puppet " +
+          "master. If 'cert' is used (puppet default), then the raw hostname of " +
+          "the host is used instead, and the nd-puppet/config/puppet_node fact " +
+          "is ignored by Puppet.", 
+          :default      => "facter",
+          :choice       => [ "facter", "cert" ],
+          :required     => "optional",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_ENABLE_REPORTS",
+          :display_name => "PUPPET_ENABLE_REPORTS",
+          :description  =>
+          "Whether or not to send back Puppet Reports. Requires that your Puppet " +
+          "server is configured to accept reports and handle them.",
+          :default      => "true",
+          :choice       => [ "true", "false" ],
+          :required     => "optional",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_NODE_NAME_FACT",
+          :display_name => "PUPPET_NODE_NAME_FACT",
+          :description  =>
+          "If nd-puppet/config/node_name is set to 'facter', this option defines " +
+          "the name of the Puppet fact to use as the node name itself. By default, " +
+          "we use 'puppet_node' which is supplied as an option for you in this " +
+          "cookbook. If you have another plugin or fact that you'd like to rely " +
+          "on, then you can supply that fact name here and safely ignore the " +
+          "nd-puppet/config/puppet_node fact above",
+          :default      => "puppet_node",
+          :required     => "optional",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_CHALLENGE_PASSWORD",
+          :display_name: "PUPPET_CHALLENGE_PASSWORD",
+          :description  =>
+          "Puppet 3.4+ supports the ability to pass data to the Puppet Master " +
+          "through the CSR itself. If this option is supplied, the csr_attributes" +
+          ".yml file is created and the challengePassword option is embedded into " +
+          "the CSR.",
+          :default      => nil,
+          :required     => "recommended",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_CA_SERVER",
+          :display_name => "PUPPET_CA_SERVER",
+          :description  => "Puppet server to use for certificate requests.",
+          :default      => "puppet",
+          :required     => "recommended",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_SERVER_HOSTNAME",
+          :display_name => "PUPPET_SERVER_HOSTNAME",
+          :description  =>
+          "Puppet server to use for manifest compilation.",
+          :default      => "puppet",
+          :required     => "recommended",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
+
+attribute "PUPPET_ENVIRONMENT_NAME",
+          :display_name => "PUPPET_ENVIRONMENT_NAME",
+          :description  =>
+          "Puppet environment to request",
+          :default      => "production",
+          :required     => "recommended",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-agent" ]
                     
           
