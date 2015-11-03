@@ -217,7 +217,7 @@ attribute "PUPPET_NODE_NAME_FACT",
           :recipes      => [ "nextdoor::puppet-agent" ]
 
 attribute "PUPPET_CHALLENGE_PASSWORD",
-          :display_name: "PUPPET_CHALLENGE_PASSWORD",
+          :display_name => "PUPPET_CHALLENGE_PASSWORD",
           :description  =>
           "Puppet 3.4+ supports the ability to pass data to the Puppet Master " +
           "through the CSR itself. If this option is supplied, the csr_attributes" +
