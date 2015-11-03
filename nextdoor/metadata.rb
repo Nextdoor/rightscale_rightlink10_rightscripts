@@ -7,7 +7,8 @@ version     '0.1.0'
 recipe      "nextdoor::dump-env", "Print environment variables for debugging purposes"
 recipe      "nextdoor::mounts", "Configure /mnt"
 recipe      "nextdoor::hostname", "Configure hostname + domain"
-recipe      "nextdoor::puppet-agent", "Configure Puppet agent"
+recipe      "nextdoor::puppet::install", "Install the Puppet agent"
+#recipe      "nextdoor::puppet::run", "Run Puppet agent"
 
 attribute "RS_CLOUD_PROVIDER",
           :category => "CLOUD",
@@ -153,7 +154,7 @@ attribute "PUPPET_PACKAGE_VERSION",
           :description  => "The Puppet version to install (apt package version number)",
           :required     => "optional",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent"]
+          :recipes      => [ "nextdoor::puppet::install"]
 
 attribute "CUSTOM_PUPPET_FACTS",
           :display_name => "CUSTOM_PUPPET_FACTS",
@@ -164,7 +165,7 @@ attribute "CUSTOM_PUPPET_FACTS",
           :required     => "optional",
           :type         => "array",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_NODE",
           :display_name => "PUPPET_NODE",
@@ -175,7 +176,7 @@ attribute "PUPPET_NODE",
           :required     => "recommended",
           :default      => nil,
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_NODE_NAME",
           :display_name => "PUPPET_NODE_NAME",
@@ -190,7 +191,7 @@ attribute "PUPPET_NODE_NAME",
           :choice       => [ "facter", "cert" ],
           :required     => "optional",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_ENABLE_REPORTS",
           :display_name => "PUPPET_ENABLE_REPORTS",
@@ -201,7 +202,7 @@ attribute "PUPPET_ENABLE_REPORTS",
           :choice       => [ "true", "false" ],
           :required     => "optional",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_NODE_NAME_FACT",
           :display_name => "PUPPET_NODE_NAME_FACT",
@@ -215,7 +216,7 @@ attribute "PUPPET_NODE_NAME_FACT",
           :default      => "puppet_node",
           :required     => "optional",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_CHALLENGE_PASSWORD",
           :display_name => "PUPPET_CHALLENGE_PASSWORD",
@@ -227,7 +228,7 @@ attribute "PUPPET_CHALLENGE_PASSWORD",
           :default      => nil,
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_CA_SERVER",
           :display_name => "PUPPET_CA_SERVER",
@@ -235,7 +236,7 @@ attribute "PUPPET_CA_SERVER",
           :default      => "puppet",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_SERVER_HOSTNAME",
           :display_name => "PUPPET_SERVER_HOSTNAME",
@@ -244,7 +245,7 @@ attribute "PUPPET_SERVER_HOSTNAME",
           :default      => "puppet",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
 
 attribute "PUPPET_ENVIRONMENT_NAME",
           :display_name => "PUPPET_ENVIRONMENT_NAME",
@@ -253,6 +254,6 @@ attribute "PUPPET_ENVIRONMENT_NAME",
           :default      => "production",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-agent" ]
+          :recipes      => [ "nextdoor::puppet::install" ]
                     
           
