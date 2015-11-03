@@ -1,7 +1,7 @@
 #! /usr/bin/sudo /usr/bin/python
 
 # ---
-# RightScript Name: nextdoor::puppet::install_and_configure
+# RightScript Name: nextdoor::puppet-install
 # Description: 
 # Packages: 
 # ...
