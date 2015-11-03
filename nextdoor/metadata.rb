@@ -7,6 +7,7 @@ version     '0.1.0'
 recipe      "nextdoor::dump-env", "Print environment variables for debugging purposes"
 recipe      "nextdoor::mounts", "Configure /mnt"
 recipe      "nextdoor::hostname", "Configure hostname + domain"
+recipe      "nextdoor::puppet-agent", "Configure Puppet agent"
 
 attribute "RS_CLOUD_PROVIDER",
           :category => "CLOUD",
