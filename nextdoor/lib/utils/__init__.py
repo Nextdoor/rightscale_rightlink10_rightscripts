@@ -20,11 +20,11 @@ def is_volumized():
         return False
     
 
-def assert_command(cmd, msg, shell=False):
+def assert_command(cmd, msg, shell=False, cwd='/tmp'):
     print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
-        print(check_output(cmd.split(), stderr=STDOUT, shell=shell))
+        print(check_output(cmd.split(), stderr=STDOUT, shell=shell, cwd=cwd))
         
     except CalledProcessError, e:
         print "   *** {0} ***   ".format(msg)
