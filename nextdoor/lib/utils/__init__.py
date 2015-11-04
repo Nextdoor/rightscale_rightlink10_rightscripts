@@ -9,7 +9,7 @@ import os
 from os import environ
 import sys
 import json
-from subprocess import call
+from subprocess import call, PIPE, Popen, STDOUT, STDERR
 import re
 
 
@@ -22,10 +22,14 @@ def is_volumized():
 
 def assert_command(cmd, msg, shell=False):
     ret = ''
-    print "   *** Executing command: %s ***   " % (cmd)
+    print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
-        ret = call(cmd.split(' '), shell=shell)
+        p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE, bufsize=1)
+        for output in p.readline():
+            print(output, flush=True)
+            
+        
     except OSError, e:
         print "   *** {0} ***   ".format(msg)
         print "retcode: {0} :: {1} :: {2}".format(e.errno, cmd, e.strerror)
