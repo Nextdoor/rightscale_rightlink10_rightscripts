@@ -21,20 +21,17 @@ def is_volumized():
     
 
 def assert_command(cmd, msg, shell=False):
-    ret = ''
     print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
-        print(check_output(cmd.split(), stdout=PIPE, stderr=STDOUT, shell=shell))
+        print(check_output(cmd.split(), stderr=STDOUT, shell=shell))
         
     except CalledProcessError, e:
         print "   *** {0} ***   ".format(msg)
         print "retcode: {0} :: {1} :: {2}".format(e.errno, cmd, e.strerror)
+        sys.exit(e.errno)
 
-    if 0 == ret:
-        return ret
-    else:
-        sys.exit(ret)
+    return 0
 
         
 def validate_env(envvar, regex):
