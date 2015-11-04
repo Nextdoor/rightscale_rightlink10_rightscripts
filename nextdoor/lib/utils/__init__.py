@@ -26,7 +26,7 @@ def assert_command(cmd, msg, shell=False):
     
     try:
         p = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT, bufsize=1)
-        for output in p.readline():
+        for output in p.stdout.readline():
             print(output)
             sys.stdout.flush()
             
