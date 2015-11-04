@@ -21,7 +21,7 @@ from utils import detect_debug_mode, assert_command, validate_env
 #
 def install_dependencies():
         debs = 'ohai wget'
-        blacklist_debs = 'puppet facter hiera'
+        blacklist_debs = 'puppet facter'
         
         environ['DEBIAN_FRONTEND'] = 'noninteractive'
         environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
