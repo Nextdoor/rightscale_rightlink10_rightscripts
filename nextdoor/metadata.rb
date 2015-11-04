@@ -122,7 +122,7 @@ attribute "DEBUG",
           :description => "** WARNING - debug mode may expose secrets!!! **",
           :require => "optional",
           :type => "string",
-          :recipes => ['nextdoor::dump-env', 'nextdoor::mounts', 'nextdoor::hostname']
+          :recipes => ['nextdoor::dump-env', 'nextdoor::mounts', 'nextdoor::hostname', 'nextdoor::puppet-install']
 
 attribute "DEFAULT_DOMAIN",
           :category => "NEXTDOOR: HOSTNAME SETTINGS",
