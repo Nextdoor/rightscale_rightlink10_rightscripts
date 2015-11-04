@@ -39,7 +39,7 @@ def configure_puppet():
 #
 #
 #
-def install_pupet():
+def install_puppet():
         install_cmd = """
         cd /tmp && \
         wget -c https://apt.puppetlabs.com/puppetlabs-release-pc1-trusty.deb && \
