@@ -28,7 +28,7 @@ def install_dependencies():
 
         assert_command('apt-get update', 'Unable to update APT cache!')
         assert_command('apt-get install -y ' + debs, 'Unable to install required .debs!')
-        assert_command('apt-get remove --purge -y ' + debs, 'Unable to uninstall blacklisted .debs!')
+        assert_command('apt-get remove --purge -y ' + blacklist_debs, 'Unable to uninstall blacklisted .debs!')
 
 #
 #
