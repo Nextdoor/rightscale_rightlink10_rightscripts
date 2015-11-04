@@ -34,6 +34,7 @@ def install_dependencies():
 #
 #
 def configure_puppet():
+        assert_command('ln -s /opt/puppetlabs/bin/puppet /usr/local/bin/puppet', 'Failed to create symlink to /opt/puppetlabs/bin/puppet!')
         print "FIXME: configure Puppet here!"
 
 #
