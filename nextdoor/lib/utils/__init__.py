@@ -29,7 +29,7 @@ def assert_command(cmd, msg, shell=False, cwd='/tmp'):
     except CalledProcessError, e:
         print "   *** {0} ***   ".format(msg)
         print "retcode: {0} :: {1} :: {2}".format(e.returncode, cmd, e.output)
-        sys.exit(e.errno)
+        sys.exit(e.returncode)
 
     return 0
 
