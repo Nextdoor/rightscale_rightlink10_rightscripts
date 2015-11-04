@@ -21,7 +21,7 @@ from utils import detect_debug_mode, assert_command, validate_env
 #
 def install_dependencies():
         debs = 'ohai wget'
-        blacklist_debs = 'puppet facter'
+        blacklist_debs = 'puppet* facter'
         
         environ['DEBIAN_FRONTEND'] = 'noninteractive'
         environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
@@ -47,9 +47,9 @@ def install_puppet():
         assert_command("wget -c {}".format(puppet_repo_package_url), 'Failed to fetch Puppet repo package!')
         assert_command("dpkg -i {}".format(puppet_repo_package), 'Failed to install Puppet repo package!')
         assert_command('apt-get update', 'Failed to update APT package cache!')
-        assert_command('apt-get install puppet', 'Failed to install Puppet!')
+        assert_command('apt-get install -y puppet-agent', 'Failed to install Puppet!')
 
-        configure_puppet()
+        
 #
 #
 #
@@ -57,6 +57,7 @@ def main():
     detect_debug_mode()
     install_dependencies()
     install_puppet()
+    configure_puppet()
 
 #
 #
