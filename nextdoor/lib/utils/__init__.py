@@ -9,7 +9,7 @@ import os
 from os import environ
 import sys
 import json
-from subprocess import call, PIPE, Popen, STDOUT, STDERR
+from subprocess import call, PIPE, Popen, STDOUT
 import re
 
 
@@ -25,7 +25,7 @@ def assert_command(cmd, msg, shell=False):
     print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
-        p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE, bufsize=1)
+        p = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT, bufsize=1)
         for output in p.readline():
             print(output)
             sys.stdout.flush()
