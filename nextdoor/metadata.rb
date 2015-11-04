@@ -156,8 +156,8 @@ attribute "PUPPET_PACKAGE_VERSION",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install"]
 
-attribute "CUSTOM_PUPPET_FACTS",
-          :display_name => "CUSTOM_PUPPET_FACTS",
+attribute "PUPPET_CUSTOM_FACTS",
+          :display_name => "PUPPET_CUSTOM_FACTS",
           :description  =>
           "A list of key=value custom puppet facts that will be stored in " +
           "/etc/facter/facts.d/nd-puppet.txt and available to Puppet as " +
