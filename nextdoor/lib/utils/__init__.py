@@ -25,7 +25,7 @@ def assert_command(cmd, msg, shell=False):
     print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
-        p = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT, bufsize=1)
+        p = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT)
         for output in p.stdout.readline():
             print(output)
             sys.stdout.flush()
