@@ -27,8 +27,8 @@ def assert_command(cmd, msg, shell=False, cwd='/tmp'):
         print(check_output(cmd.split(), stderr=STDOUT, shell=shell, cwd=cwd))
         
     except CalledProcessError, e:
-        print "   *** {0} ***   ".format(e.msg)
-        print "retcode: {0} :: {1} :: {2}".format(e.errno, cmd, e.strerror)
+        print "   *** {0} ***   ".format(msg)
+        print "retcode: {0} :: {1} :: {2}".format(e.returncode, cmd, e.output)
         sys.exit(e.errno)
 
     return 0
