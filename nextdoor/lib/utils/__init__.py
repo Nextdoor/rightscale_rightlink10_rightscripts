@@ -20,7 +20,7 @@ def is_volumized():
         return False
     
 
-def assert_command(cmd, msg, shell=False, cwd='/tmp'):
+def assert_command(cmd, msg, shell=False, cwd=None):
     print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
