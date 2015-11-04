@@ -8,7 +8,7 @@
 # 
 
 import sys
-sys.path.append('./lib')
+sys.path.append('./lib/python')
 import utils
 
 utils.dump_environment()

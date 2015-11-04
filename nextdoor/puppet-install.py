@@ -11,7 +11,7 @@ import os
 from os import environ
 import sys
 
-sys.path.append('./lib')
+sys.path.append('./lib/python')
 from utils import detect_debug_mode, assert_command, validate_env
 
 
@@ -39,15 +39,15 @@ def install_dependencies():
 #
 #
 def configure_puppet_external_facts():
-
+        
         # take the envvar apart and reconstitute as dict
         validate_env('PUPPET_CUSTOM_FACTS', '^\w+=\w+(,\w+=\w+)$')
         fact_dict = {}
         facts = os.environ['PUPPET_CUSTOM_FACTS'].split(',')
         for fact in facts:
-          (key, value) = fact.split('=')
-          fact_dict[key] = value
-
+                (key, value) = fact.split('=')
+                fact_dict[key] = value
+                
         # construct some YAML and dump it into external fact file
         try:
                 with open('/etc/puppetlabs/facter/facts.d', 'w') as outfile:
@@ -55,17 +55,23 @@ def configure_puppet_external_facts():
         except IEError, e:
                 sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.message))
 
-        pp(fact_dir)
+        pp(fact_dict)
 
+        
+#
+#
+#
+def bootstrap_puppet_config():
+        bootstrap_cmd = "puppet apply --modulepath=./lib/puppet/modules /lib/puppet/manifests/site.pp --debug"
+        assert_command(bootstrap_cmd, 'Failed during Puppet bootstrap run!')
 
+        
 #
 #
 #
 def configure_puppet():
-        
-        assert_command('ln -s /opt/puppetlabs/bin/puppet /usr/local/bin/puppet', 'Failed to create symlink to /opt/puppetlabs/bin/puppet!')
-
         configure_puppet_external_facts()
+        bootstrap_puppet_config()
 
 
 #

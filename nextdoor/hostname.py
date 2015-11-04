@@ -12,7 +12,7 @@ import sys
 import os
 import re
 
-sys.path.append('./lib')
+sys.path.append('./lib/python')
 from utils import detect_debug_mode, assert_command, validate_env
 
 
