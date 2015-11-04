@@ -9,7 +9,7 @@ import os
 from os import environ
 import sys
 import json
-from subprocess import call, PIPE, Popen, STDOUT
+from subprocess import check_output, PIPE, STDOUT, CalledProcessError
 import re
 
 
@@ -25,11 +25,9 @@ def assert_command(cmd, msg, shell=False):
     print "   *** Executing command: {} ***   ".format(cmd)
     
     try:
-        p = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT)
-        for output in p.stdout.readline():
-            print(output)
+        print(check_output(cmd.split(), stdout=PIPE, stderr=STDOUT, shell=shell))
         
-    except OSError, e:
+    except CalledProcessError, e:
         print "   *** {0} ***   ".format(msg)
         print "retcode: {0} :: {1} :: {2}".format(e.errno, cmd, e.strerror)
 
