@@ -20,7 +20,7 @@ from utils import detect_debug_mode, assert_command, validate_env
 #
 def install_dependencies():
         debs = 'ohai wget python-yaml'
-        blacklist_debs = 'puppet* facter'
+        blacklist_debs = 'puppet facter'
         pips = 'prettyprint'
                 
         environ['DEBIAN_FRONTEND'] = 'noninteractive'
@@ -57,10 +57,7 @@ def configure_puppet_external_facts():
 
         pp(fact_dir)
 
-        
-                
-                        
-        
+
 #
 #
 #
