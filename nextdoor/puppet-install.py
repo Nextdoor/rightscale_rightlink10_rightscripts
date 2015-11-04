@@ -46,7 +46,7 @@ def install_puppet():
 
         assert_command("cd /tmp && wget -c {}".format(puppet_repo_package_url), "Failed to fetch Puppet repo package!", shell=True)
         assert_command("cd /tmp && dpkg -i {}".format(puppet_repo_package), "Failed to install Puppet repo package!", shell=True)
-        assert_command('apt-get update && apt-get install -y puppet', 'Failed to install Puppet!', shell=True)
+        assert_command('apt-get update && apt-get -y install puppet', 'Failed to install Puppet!', shell=True)
 
         configure_puppet()
 #
