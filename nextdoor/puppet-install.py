@@ -40,12 +40,12 @@ def configure_puppet():
 #
 #
 def install_puppet():
-        install_cmd = """
-        cd /tmp && \
-        wget -c https://apt.puppetlabs.com/puppetlabs-release-pc1-trusty.deb && \
-        dpkg -i puppetlabs*.deb
-        """
-	assert_command(install_cmd, 'Failed to fetch Puppet repo settings!')
+
+        puppet_repo_package = 'puppetlabs-release-pc1-trusty.deb'
+        puppet_repo_package_url = 'https://apt.puppetlabs.com/' + puppet_repo_package
+
+        assert_command("cd /tmp && wget -c {}".format(puppet_repo_package_url), "Failed to fetch Puppet repo package!", shell=True)
+        assert_command("cd /tmp && dpkg -i {}".format(puppet_repo_package), "Failed to install Puppet repo package!", shell=True)
         assert_command('apt-get install -y puppet', 'Failed to install Puppet!', shell=True)
 
         configure_puppet()
