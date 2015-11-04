@@ -20,12 +20,12 @@ def is_volumized():
         return False
     
 
-def assert_command(cmd, msg):
+def assert_command(cmd, msg, shell=False):
     ret = ''
     print "   *** Executing command: %s ***   " % (cmd)
     
     try:
-        ret = call(cmd.split(' '))
+        ret = call(cmd.split(' '), shell=shell)
     except OSError, e:
         print "   *** {0} ***   ".format(msg)
         print "retcode: {0} :: {1} :: {2}".format(e.errno, cmd, e.strerror)
