@@ -62,7 +62,7 @@ def configure_puppet_external_facts():
 #
 #
 def bootstrap_puppet_config():
-        bootstrap_cmd = "puppet apply --modulepath=./lib/puppet/modules /lib/puppet/manifests/site.pp --debug"
+        bootstrap_cmd = "puppet apply --modulepath=./lib/puppet/modules ./lib/puppet/manifests/site.pp --debug"
         assert_command(bootstrap_cmd, 'Failed during Puppet bootstrap run!')
 
         
