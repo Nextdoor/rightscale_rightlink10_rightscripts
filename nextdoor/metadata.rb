@@ -157,9 +157,7 @@ attribute "PUPPET_PACKAGE_VERSION",
 attribute "PUPPET_CUSTOM_FACTS",
           :display_name => "PUPPET_CUSTOM_FACTS",
           :description  =>
-          "A list of key=value custom puppet facts that will be stored in " +
-          "/etc/facter/facts.d/nd-puppet.txt and available to Puppet as " +
-          "facts for your manifest compilation. eg: my_cname=foobar",
+          "A list of key=value custom puppet facts that will be stored in /etc/facter/facts.d/nd-puppet.txt and available to Puppet as facts for your manifest compilation. eg: my_cname=foobar",
           :required     => "optional",
           :type         => "array",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
@@ -168,9 +166,7 @@ attribute "PUPPET_CUSTOM_FACTS",
 attribute "PUPPET_NODE",
           :display_name => "PUPPET_NODE",
           :description  =>
-          "Name to pass to the Puppet server as the Node Name.\n" +
-          "Only used if nd-puppet/config/node_name is 'facter' and " +
-          "nd-puppet/config/node_name_fact is 'puppet_node'.",
+          "Name to pass to the Puppet server as the Node Name. Only used if nd-puppet/config/node_name is 'facter' and nd-puppet/config/node_name_fact is 'puppet_node'.",
           :required     => "recommended",
           :default      => nil,
           :category     => "NEXTDOOR: PUPPET SETTINGS",
@@ -179,12 +175,7 @@ attribute "PUPPET_NODE",
 attribute "PUPPET_NODE_NAME",
           :display_name => "PUPPET_NODE_NAME",
           :description  =>
-          "What node_name supplier to use? Either 'cert' or 'facter'. " +
-          "If 'facter' is used (default) then the nd-puppet/config/" +
-          "puppet_node fact is used as the node name when contacting the puppet " +
-          "master. If 'cert' is used (puppet default), then the raw hostname of " +
-          "the host is used instead, and the nd-puppet/config/puppet_node fact " +
-          "is ignored by Puppet.", 
+          "What node_name supplier to use? Either 'cert' or 'facter'. If 'facter' is used (default) then the nd-puppet/config/puppet_node fact is used as the node name when contacting the puppet master. If 'cert' is used (puppet default), then the raw hostname of the host is used instead, and the nd-puppet/config/puppet_node fact is ignored by Puppet.", 
           :default      => "facter",
           :choice       => [ "facter", "cert" ],
           :required     => "optional",
@@ -194,8 +185,7 @@ attribute "PUPPET_NODE_NAME",
 attribute "PUPPET_ENABLE_REPORTS",
           :display_name => "PUPPET_ENABLE_REPORTS",
           :description  =>
-          "Whether or not to send back Puppet Reports. Requires that your Puppet " +
-          "server is configured to accept reports and handle them.",
+          "Whether or not to send back Puppet Reports. Requires that your Puppet server is configured to accept reports and handle them.",
           :default      => "true",
           :choice       => [ "true", "false" ],
           :required     => "optional",
@@ -205,12 +195,7 @@ attribute "PUPPET_ENABLE_REPORTS",
 attribute "PUPPET_NODE_NAME_FACT",
           :display_name => "PUPPET_NODE_NAME_FACT",
           :description  =>
-          "If nd-puppet/config/node_name is set to 'facter', this option defines " +
-          "the name of the Puppet fact to use as the node name itself. By default, " +
-          "we use 'puppet_node' which is supplied as an option for you in this " +
-          "cookbook. If you have another plugin or fact that you'd like to rely " +
-          "on, then you can supply that fact name here and safely ignore the " +
-          "nd-puppet/config/puppet_node fact above",
+          "If nd-puppet/config/node_name is set to 'facter', this option defines the name of the Puppet fact to use as the node name itself. By default, we use 'puppet_node' which is supplied as an option for you in this cookbook. If you have another plugin or fact that you'd like to rely on, then you can supply that fact name here and safely ignore the nd-puppet/config/puppet_node fact above",
           :default      => "puppet_node",
           :required     => "optional",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
@@ -219,10 +204,7 @@ attribute "PUPPET_NODE_NAME_FACT",
 attribute "PUPPET_CHALLENGE_PASSWORD",
           :display_name => "PUPPET_CHALLENGE_PASSWORD",
           :description  =>
-          "Puppet 3.4+ supports the ability to pass data to the Puppet Master " +
-          "through the CSR itself. If this option is supplied, the csr_attributes" +
-          ".yml file is created and the challengePassword option is embedded into " +
-          "the CSR.",
+          "Puppet 3.4+ supports the ability to pass data to the Puppet Master through the CSR itself. If this option is supplied, the csr_attributes.yml file is created and the challengePassword option is embedded into the CSR.",
           :default      => nil,
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
