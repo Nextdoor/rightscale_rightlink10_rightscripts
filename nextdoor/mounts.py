@@ -35,7 +35,7 @@ def install_dependencies():
 #
 #
 def ec2_mount():
-    mount_command = "python ./lib/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
+    mount_command = "python ./lib/python/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
 
     for key, regex in {
         'AWS_ACCESS_KEY_ID': '^.+$',
@@ -70,7 +70,7 @@ def ec2_mount():
 #
 #
 def google_mount():
-    mount_command = "python ./lib/google_volume.py -a instance -m {} {} -f {}"
+    mount_command = "python ./lib/python/google_volume.py -a instance -m {} {} -f {}"
 
     mount_command = mount_command.format(
         os.environ['STORAGE_MOUNTPOINT'],
