@@ -57,14 +57,13 @@ def configure_puppet_external_facts():
                         except IOError, e:
                                 sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
                                 
-                                pp(fact_dict)
-
+                pp(fact_dict)
 
 #
 #
 #
 def bootstrap_puppet_config():
-        bootstrap_cmd = "puppet apply --modulepath=./lib/puppet/modules ./lib/puppet/manifests/site.pp --debug"
+        bootstrap_cmd = "/opt/puppetlabs/puppet/bin/puppet apply --modulepath=./lib/puppet/modules ./lib/puppet/manifests/site.pp --debug"
         assert_command(bootstrap_cmd, 'Failed during Puppet bootstrap run!')
 
         
