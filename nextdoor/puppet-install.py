@@ -52,7 +52,7 @@ def configure_puppet_external_facts():
         try:
                 with open('/etc/puppetlabs/facter/facts.d', 'w') as outfile:
                         outfile.write(yaml.dump(fact_dict))
-        except IEError, e:
+        except IOError, e:
                 sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.message))
 
         pp(fact_dict)
