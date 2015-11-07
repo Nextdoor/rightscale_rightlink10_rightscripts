@@ -168,7 +168,6 @@ attribute "PUPPET_NODE",
           :description  =>
           "Name to pass to the Puppet server as the Node Name. Only used if nd-puppet/config/node_name is 'facter' and nd-puppet/config/node_name_fact is 'puppet_node'.",
           :required     => "recommended",
-          :default      => nil,
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 
@@ -205,7 +204,6 @@ attribute "PUPPET_CHALLENGE_PASSWORD",
           :display_name => "PUPPET_CHALLENGE_PASSWORD",
           :description  =>
           "Puppet 3.4+ supports the ability to pass data to the Puppet Master through the CSR itself. If this option is supplied, the csr_attributes.yml file is created and the challengePassword option is embedded into the CSR.",
-          :default      => nil,
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
