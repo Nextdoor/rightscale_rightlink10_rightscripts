@@ -160,6 +160,7 @@ attribute "PUPPET_CUSTOM_FACTS",
           "A list of key=value custom puppet facts that will be stored in /etc/facter/facts.d/nd-puppet.txt and available to Puppet as facts for your manifest compilation. eg: my_cname=foobar",
           :required     => "optional",
           :type         => "array",
+          :default      => '',
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 
