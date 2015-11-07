@@ -12,7 +12,7 @@ from os import environ
 import sys
 
 sys.path.append('./lib/python')
-from utils import detect_debug_mode, assert_command, validate_env
+from utils import detect_debug_mode, assert_command, validate_env, mkdir_p
 
 
 #
@@ -50,6 +50,7 @@ def configure_puppet_external_facts():
                 
         # construct some YAML and dump it into external fact file
         try:
+                mkdir_p('/etc/puppetlabs/facter/facts.d')
                 with open('/etc/puppetlabs/facter/facts.d', 'w') as outfile:
                         outfile.write(yaml.dump(fact_dict))
         except IOError, e:

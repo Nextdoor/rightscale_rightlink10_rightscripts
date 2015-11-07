@@ -5,14 +5,26 @@
 ## Author: Nathan Valentine <nathan@nextdoor.com>
 ##
 
-import os
+import os, errno, sys, json, re
 from os import environ
-import sys
-import json
 from subprocess import check_output, PIPE, STDOUT, CalledProcessError
-import re
 
 
+#
+#
+#
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
+
+
+#
+#
+#
 def is_volumized():
     if os.path.exists('/etc/nextdoor/volumized'):
         return True
@@ -20,6 +32,9 @@ def is_volumized():
         return False
     
 
+#
+#
+#
 def assert_command(cmd, msg, shell=False, cwd=None):
     print "   *** Executing command: {} ***   ".format(cmd)
     
@@ -33,7 +48,9 @@ def assert_command(cmd, msg, shell=False, cwd=None):
 
     return 0
 
-        
+#
+#
+#
 def validate_env(envvar, regex):
     if not envvar in environ:
         print "   *** \'{0}\' not found in environment!  ***".format(envvar)
@@ -45,17 +62,26 @@ def validate_env(envvar, regex):
         
     else:
         return True
-        
-        
+
+
+#
+#
+#
 def volumize():
     assert_command('mkdir -p /etc/nextdoor/volumized', "Could not create Nextdoor's volumize lock file!")
 
-        
+
+#
+#
+#
 def detect_debug_mode():
     if "DEBUG" in environ:
         dump_environment()
 
-        
+
+#
+#
+#
 def dump_environment():
     print(
         json.dumps(environ.__dict__,
