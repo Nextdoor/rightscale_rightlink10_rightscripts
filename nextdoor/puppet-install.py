@@ -39,26 +39,27 @@ def install_dependencies():
 #
 #
 def configure_puppet_external_facts():
-        
-        # take the envvar apart and reconstitute as dict
-        validate_env('PUPPET_CUSTOM_FACTS', '^\w+=\w+(,\w+=\w+)$')
-        fact_dict = {}
-        facts = os.environ['PUPPET_CUSTOM_FACTS'].split(',')
-        for fact in facts:
-                (key, value) = fact.split('=')
-                fact_dict[key] = value
-                
-        # construct some YAML and dump it into external fact file
-        try:
-                mkdir_p('/etc/puppetlabs/facter/facts.d')
-                with open('/etc/puppetlabs/facter/facts.d', 'w') as outfile:
-                        outfile.write(yaml.dump(fact_dict))
-        except IOError, e:
-                sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
 
-        pp(fact_dict)
+        if 'PUPPET_CUSTOM_FACTS' in os.environ:
+                # take the envvar apart and reconstitute as dict
+                validate_env('PUPPET_CUSTOM_FACTS', '^\w+=\w+(,\w+=\w+)$')
+                fact_dict = {}
+                facts = os.environ['PUPPET_CUSTOM_FACTS'].split(',')
+                for fact in facts:
+                        (key, value) = fact.split('=')
+                        fact_dict[key] = value
+                        
+                        # construct some YAML and dump it into external fact file
+                        try:
+                                mkdir_p('/etc/puppetlabs/facter/facts.d')
+                                with open('/etc/puppetlabs/facter/facts.d', 'w') as outfile:
+                                        outfile.write(yaml.dump(fact_dict))
+                        except IOError, e:
+                                sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
+                                
+                                pp(fact_dict)
 
-        
+
 #
 #
 #
