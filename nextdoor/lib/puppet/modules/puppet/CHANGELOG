@@ -1,0 +1,80 @@
+2012-08-28 - Stephen Johnson <stephen@pupppetlabs.com> - 0.0.2
+ * Revert inifile updating sheel scripts as it adds spaces
+2012-08-31 - Stephen Johnson <stephen@puppetlabs.com> - 0.0.3
+ * Fix reporting and add more spec tests
+2012-09-05 - Stephen Johnson <stephen@puppetlabs.com> - 0.0.4
+ * Add pluginsync support
+ * Fix issue with inherited file permissions
+ * Cleanup code to use resource defaults
+ 2013-03-22 Stephen Johnson <stephen@puppetlabs.com> - 0.0.5
+ * Updated dependencies
+2013-03-29 Stephen Johnson <stephen@puppetlabs.com> - 0.0.7
+  * Added redhat support
+2013-05-01 Stephen Johnson <stephen@puppetlabs.com> - 0.0.8
+  * Fix puppet site references
+2013-05-12 Stephen Johnson <stephen@puppetlabs.com> - 0.0.9
+  * Add srv record support to client
+2013-07-22 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.14
+  * Added support of version 0.8.0 of Apache module
+2013-07-22 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.15
+  * Use puppetlabs inifile
+2013-10-04 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.16
+  * Identation fixes
+  * Also add puppetmaster-common to get round version issue
+  * Add spec tests for puppetmaster-common
+2013-10-04 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.17
+  * Fix for puppetmaster-common not being in redhat repo
+2013-10-27 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.18
+  * Add RedHat spec tests <Pall Valmundsson>
+  * Add ServerSpec test <Pall Valmundsson>
+  * Fix issues with external run type for agent
+  * Remove dependencies on MIT Gpg Server
+2013-11-10 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.19
+  * Support configuring storeconfigs on an external puppetdb server <Pall Valmundsson>
+2014-02-28 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.20
+  * fix directory and file permissions <saz>
+  * add parameter for changing hiera_config value <saz>
+  * fix apache_custom_fragment template for apache2.4 <saz>
+2014-04-29 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.21
+  * added puppet agent option "ordering" <gigawhat>
+  * added puppet agent option "trusted_node_data"
+  * Beta Suse Support
+2014-06-13 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.22
+  * corrected the package name for FreeBSD <oillogicalimbecile>
+  * Added listen parameter for puppet agent to listen for connections <pythianjoseph>
+  * Added support for dns_alt_names <jyundt>
+  * Fix default encoding in config.ru <dvorak>
+  * Added reportserver parameter for puppet agent to send transaction <pythianjoseph>
+2014-06-25 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.23
+  * Fixed mis quoting for a few variables <lavoiesi>
+  * Add initial support for directory environments <crayfishx>
+2014-09-05 Stephen Johnson <steve@thatbytes.co.uk> - 1.0.0
+  * Need double quotes to interpolate variable <Robin Bowes>
+  * Improve SSL protocol and ciphersuite configuration (security) <Gert van Dijk>
+  * Delint <Mick Pollard>
+  * use the locally scoped puppet_ssldir variable <Mick Pollard>
+  * fix typo in README: s/evn/env/ <Mick Pollard>
+  * Add directory environment support <Craig Dunn>
+  * remove apache custom fragment <Steffen Zieger>
+  * Add 'manual' puppet_run_style, to not manange the agent service. <Gert van Dijk>
+  * Ability to manage the digest_algorithm setting. <Gert van Dijk>
+2014-10-10 Stephen Johnson <steve@thatbytes.co.uk> - 1.1.0
+  * Add new templatedir paramter to agent
+  * Add external_nodes and node_terminus <Jesi Major>
+2014-12-09 Stephen Johnson <steve@thatbytes.co.uk> - 1.2.0
+  * move cron command to class parameter <g.chernyshev>
+  * Use double-quotes to allow variable expansion in environmentpath <Robin Bowes>
+  * Allow passenger tempdir to be configurable <Robin Bowes>
+  * Fix for future parse <Tim Meusel>
+  * Fix sections settings for various configuration params <Benjamin Krein>
+  * templatedir is deprecated, so do not add by default <Michael Arnold>
+  * Let Puppet deal with setting it's own permissions <Michael Arnold>
+  * Added configtimeout setting to puppet::agent to allow override of this default setting <Jesi Major>
+  * Add new flag to make ssl cert generation optional <Robin Bowes>
+2014-12-31 Stephen Johnson <steve@thatbytes.co.uk> - 1.3.0
+  * missing @ in the variable <primeministerp>
+  * Remove RackAutoDetect and RailsAutoDetest <Stephen Johnson>
+  * Add acceptance tests for redhat <Stephen Johnson>
+  * Add new metadata file for puppetforge  <Stephen Johnson>
+2014-12-31 Stephen Johnson <steve@thatbytes.co.uk> - 1.3.1
+  * Cleanup some lint items <Stephen Johnson>
