@@ -147,10 +147,11 @@ attribute "SERVER_NAME",
           :type => "string",
           :recipes => ['nextdoor:dump-env', 'nextdoor::hostname']
 
-attribute "PUPPET_PACKAGE_VERSION",
-          :display_name => "PUPPET_PACKAGE_VERSION",
-          :description  => "The Puppet version to install (apt package version number)",
+attribute "PUPPET_COLLECTION_VERSION"
+          :display_name => "PUPPET_COLLECTION_VERSION",
+          :description  => "The Puppet Collection version to install. ex: 'PC1'",
           :required     => "optional",
+          :default      => "PC1",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install"]
 
@@ -194,10 +195,9 @@ attribute "PUPPET_ENABLE_REPORTS",
 
 attribute "PUPPET_NODE_NAME_FACT",
           :display_name => "PUPPET_NODE_NAME_FACT",
-          :description  =>
-          "If nd-puppet/config/node_name is set to 'facter', this option defines the name of the Puppet fact to use as the node name itself. By default, we use 'puppet_node' which is supplied as an option for you in this cookbook. If you have another plugin or fact that you'd like to rely on, then you can supply that fact name here and safely ignore the nd-puppet/config/puppet_node fact above",
-          :default      => "puppet_node",
+          :description  => "Set the node name embedded in the Puppet cert based on this Puppet fact. Defaults to '$::hostname'."
           :required     => "optional",
+          :default      => "hostname",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 
@@ -228,8 +228,7 @@ attribute "PUPPET_SERVER_HOSTNAME",
 
 attribute "PUPPET_ENVIRONMENT_NAME",
           :display_name => "PUPPET_ENVIRONMENT_NAME",
-          :description  =>
-          "Puppet environment to request",
+          :description  => "Puppet environment to request",
           :default      => "production",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",

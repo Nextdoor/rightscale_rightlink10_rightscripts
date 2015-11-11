@@ -51,7 +51,7 @@ def configure_puppet_external_facts():
                 # construct some YAML and dump it into external fact file
                 try:
                         mkdir_p('/etc/puppetlabs/facter/facts.d')
-                        with open('/etc/puppetlabs/facter/facts.d/nextdoor_bootstrap.yaml', 'w') as outfile:
+                        with open('/etc/puppetlabs/facter/facts.d/nextdoor_from_rightscale_input.yaml', 'w') as outfile:
                                 outfile.write(yaml.dump(fact_dict, explicit_start=True, default_flow_style=False))
                 except IOError, e:
                         sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
@@ -61,9 +61,29 @@ def configure_puppet_external_facts():
 #
 #
 def bootstrap_puppet_config():
-        bootstrap_cmd = "/opt/puppetlabs/puppet/bin/puppet apply --modulepath=./lib/puppet/modules ./lib/puppet/manifests/site.pp"
-        assert_command(bootstrap_cmd, 'Failed during Puppet bootstrap run!')
+        dmc = '^.+$'
+        fact_dict = {}
+        for key, regex in {
+                        'PUPPET_ENVIRONMENT_NAME': dmc,
+                        'PUPPET_NODE_NAME_FACT': dmc,
+                        'PUPPET_SERVER_HOSTNAME': dmc,
+                        'PUPPET_CA_SERVER': dmc,
+                        'PUPPET_ENABLE_REPORTS': '^(true|false)$',
+        }.iteritems():
+                validate_env(key, regex)
 
+                
+        for setting, value in {
+                        'environment': environ['PUPPET_ENVIRONMENT_NAME'],
+                        'node_name_fact': environ['PUPPET_NODE_NAME_FACT'],
+                        'server': environ['PUPPET_SERVER_HOSTNAME'],
+                        'ca_server': environ['PUPPET_CA_SERVER'],
+                        'report': environ['PUPPET_ENABLE_REPORTS'],
+        }.iteritems():
+                assert_command('/opt/puppetlabs/puppet/bin/puppet config set {} {} --section agent'.format(setting, value),
+                               'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
+                
+               
         
 #
 #
@@ -78,7 +98,10 @@ def configure_puppet():
 #
 def install_puppet():
 
-        puppet_repo_package = 'puppetlabs-release-pc1-trusty.deb'
+        # use one of the supported Puppet Collection releases
+        validate_env('PUPPET_COLLECTION_VERSION', '^PC\d+$')
+        puppet_version = environ['PUPPET_COLLECTION_VERSION'].lower()
+        puppet_repo_package = 'puppetlabs-release-{}-trusty.deb'.format(puppet_version)
         puppet_repo_package_url = 'https://apt.puppetlabs.com/' + puppet_repo_package
 
         assert_command("wget -c {}".format(puppet_repo_package_url), 'Failed to fetch Puppet repo package!', cwd='/tmp')

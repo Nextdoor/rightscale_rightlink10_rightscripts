@@ -1,0 +1,7 @@
+{
+  "README.md": "2f2465b39465aad8aac5fc2a03bc3dcf",
+  "Rakefile": "20b80e526e351a74df2001f504e756d2",
+  "lib/puppet/parser/functions/multi_validate_re.rb": "1c83a288dd9dab831d2da1a2857f7cfa",
+  "metadata.json": "58d409e6f80e45ac613e0eee9c963299",
+  "tests/multi_validate_re.pp": "ecb32d547700fac29a3e116b2732afe4"
+}
