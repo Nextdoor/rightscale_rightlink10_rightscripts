@@ -50,7 +50,7 @@ def configure_puppet_external_facts():
                         try:
                                 mkdir_p('/etc/puppetlabs/facter/facts.d')
                                 with open('/etc/puppetlabs/facter/facts.d/nextdoor_bootstrap.yml', 'w') as outfile:
-                                        outfile.write(yaml.dump(fact_dict))
+                                        outfile.write(YAML.dump(fact_dict))
                         except IOError, e:
                                 sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
                                 
