@@ -8,7 +8,7 @@
 # 
 
 import os, sys, yaml
-from os import environs
+from os import environ
 
 sys.path.append('./lib/python')
 from utils import detect_debug_mode, assert_command, validate_env, mkdir_p
@@ -18,8 +18,8 @@ from utils import detect_debug_mode, assert_command, validate_env, mkdir_p
 #
 #
 def install_dependencies():
-        debs = 'ohai wget python-yaml'
-        blacklist_debs = 'puppet facter'
+        debs = 'wget'
+        blacklist_debs = 'puppet'
         pips = 'prettyprint'
                 
         environ['DEBIAN_FRONTEND'] = 'noninteractive'
@@ -29,6 +29,9 @@ def install_dependencies():
         assert_command('apt-get install -y ' + debs, 'Unable to install required .debs!')
         assert_command('apt-get remove --purge -y ' + blacklist_debs, 'Unable to uninstall blacklisted .debs!')
         assert_command('pip install ' + pips, 'Unable to install pip packages!')
+
+        # now that we have PrettyPrint, let's load it
+        from prettyprint import pp
 
 
 #
@@ -45,15 +48,14 @@ def configure_puppet_external_facts():
                         (key, value) = fact.split('=')
                         fact_dict[key] = value
                         
-                        # construct some YAML and dump it into external fact file
-                        try:
-                                mkdir_p('/etc/puppetlabs/facter/facts.d')
-                                with open('/etc/puppetlabs/facter/facts.d/nextdoor_bootstrap.yml', 'w') as outfile:
-                                        outfile.write(YAML.dump(fact_dict))
-                        except IOError, e:
-                                sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
+                # construct some YAML and dump it into external fact file
+                try:
+                        mkdir_p('/etc/puppetlabs/facter/facts.d')
+                        with open('/etc/puppetlabs/facter/facts.d/nextdoor_bootstrap.yaml', 'w') as outfile:
+                                outfile.write(yaml.dump(fact_dict, explicit_start=True, default_flow_style=False)
+                except IOError, e:
+                        sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
                                 
-                pp(fact_dict)
 
 #
 #
