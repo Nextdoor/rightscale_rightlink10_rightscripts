@@ -7,9 +7,8 @@
 # ...
 # 
 
-import os
-from os import environ
-import sys
+import os, sys, yaml
+from os import environs
 
 sys.path.append('./lib/python')
 from utils import detect_debug_mode, assert_command, validate_env, mkdir_p
@@ -37,11 +36,11 @@ def install_dependencies():
 #
 def configure_puppet_external_facts():
 
-        if 'PUPPET_CUSTOM_FACTS' in os.environ:
+        if 'PUPPET_CUSTOM_FACTS' in environ:
                 # take the envvar apart and reconstitute as dict
                 validate_env('PUPPET_CUSTOM_FACTS', '^\w+=.+(,\w+=.+)*$')
                 fact_dict = {}
-                facts = os.environ['PUPPET_CUSTOM_FACTS'].split(',')
+                facts = environ['PUPPET_CUSTOM_FACTS'].split(',')
                 for fact in facts:
                         (key, value) = fact.split('=')
                         fact_dict[key] = value
