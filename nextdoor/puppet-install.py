@@ -31,9 +31,6 @@ def install_dependencies():
         assert_command('apt-get remove --purge -y ' + blacklist_debs, 'Unable to uninstall blacklisted .debs!')
         assert_command('pip install ' + pips, 'Unable to install pip packages!')
 
-        import yaml
-        from prettyprint import pp
-        
 
 #
 #
@@ -42,7 +39,7 @@ def configure_puppet_external_facts():
 
         if 'PUPPET_CUSTOM_FACTS' in os.environ:
                 # take the envvar apart and reconstitute as dict
-                validate_env('PUPPET_CUSTOM_FACTS', '^\w+=\w+(,\w+=\w+)$')
+                validate_env('PUPPET_CUSTOM_FACTS', '^\w+=.+(,\w+=.+)*$')
                 fact_dict = {}
                 facts = os.environ['PUPPET_CUSTOM_FACTS'].split(',')
                 for fact in facts:
@@ -63,7 +60,7 @@ def configure_puppet_external_facts():
 #
 #
 def bootstrap_puppet_config():
-        bootstrap_cmd = "/opt/puppetlabs/puppet/bin/puppet apply --modulepath=./lib/puppet/modules ./lib/puppet/manifests/site.pp --debug"
+        bootstrap_cmd = "/opt/puppetlabs/puppet/bin/puppet apply --modulepath=./lib/puppet/modules ./lib/puppet/manifests/site.pp"
         assert_command(bootstrap_cmd, 'Failed during Puppet bootstrap run!')
 
         
