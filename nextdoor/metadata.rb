@@ -147,11 +147,11 @@ attribute "SERVER_NAME",
           :type => "string",
           :recipes => ['nextdoor:dump-env', 'nextdoor::hostname']
 
-attribute "PUPPET_COLLECTION_VERSION"
-          :display_name => "PUPPET_COLLECTION_VERSION",
-          :description  => "The Puppet Collection version to install. ex: 'PC1'",
+attribute "PUPPET_AGENT_VERSION",
+          :display_name => "PUPPET_AGENT_VERSION",
+          :description  => "The Puppet agent version to install. ex: 'PC1', '3.8.1-1puppetlabs1'",
           :required     => "optional",
-          :default      => "PC1",
+          :default      => "3.7.4-1puppetlabs1",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install"]
 
@@ -221,7 +221,7 @@ attribute "PUPPET_SERVER_HOSTNAME",
           :display_name => "PUPPET_SERVER_HOSTNAME",
           :description  =>
           "Puppet server to use for manifest compilation.",
-          :default      => "puppet",
+          :default      => "puppet.nextdoor.com",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]

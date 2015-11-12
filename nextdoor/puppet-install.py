@@ -7,7 +7,7 @@
 # ...
 # 
 
-import os, sys, yaml
+import os, sys, yaml, string, random
 from os import environ
 
 sys.path.append('./lib/python')
@@ -50,8 +50,8 @@ def configure_puppet_external_facts():
                         
                 # construct some YAML and dump it into external fact file
                 try:
-                        mkdir_p('/etc/puppetlabs/facter/facts.d')
-                        with open('/etc/puppetlabs/facter/facts.d/nextdoor_from_rightscale_input.yaml', 'w') as outfile:
+                        mkdir_p('/etc/puppet/facter/facts.d')
+                        with open('/etc/puppet/facter/facts.d/nextdoor_from_rightscale_input.yaml', 'w') as outfile:
                                 outfile.write(yaml.dump(fact_dict, explicit_start=True, default_flow_style=False))
                 except IOError, e:
                         sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
@@ -80,7 +80,7 @@ def bootstrap_puppet_config():
                         'ca_server': environ['PUPPET_CA_SERVER'],
                         'report': environ['PUPPET_ENABLE_REPORTS'],
         }.iteritems():
-                assert_command('/opt/puppetlabs/puppet/bin/puppet config set {} {} --section agent'.format(setting, value),
+                assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
                                'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
                 
         
@@ -89,24 +89,23 @@ def bootstrap_puppet_config():
 #
 def install_puppet_agent():
 
-        # use one of the supported Puppet Collection releases
-        validate_env('PUPPET_COLLECTION_VERSION', '^PC\d+$')
-        puppet_version = environ['PUPPET_COLLECTION_VERSION'].lower()
-        puppet_repo_package = 'puppetlabs-release-{}-trusty.deb'.format(puppet_version)
+        validate_env('PUPPET_AGENT_VERSION', '^([\w\.\-]+|PC\d+)$')
+        puppet_version = environ['PUPPET_AGENT_VERSION'].lower()
+        puppet_repo_package = 'puppetlabs-release-trusty.deb'
         puppet_repo_package_url = 'https://apt.puppetlabs.com/' + puppet_repo_package
 
         assert_command("wget -c {}".format(puppet_repo_package_url), 'Failed to fetch Puppet repo package!', cwd='/tmp')
         assert_command("dpkg -i {}".format(puppet_repo_package), 'Failed to install Puppet repo package!', cwd='/tmp')
         assert_command('apt-get update', 'Failed to update APT package cache!')
-        assert_command('apt-get install -y puppet-agent', 'Failed to install Puppet!')
+        assert_command("apt-get install -y puppet-common={} puppet={}".format(puppet_version, puppet_version), 'Failed to install Puppet!')
 
 
 #
 #
 #
 def puppet_bootstrapped():
-        sslcsrdir = '/etc/puppetlabs/puppet/ssl/certificate_reqeusts'
-        sslcertdir = '/etc/puppetlabs/ssl/certs'
+        sslcsrdir = '/var/lib/puppet/ssl/certificate_requests'
+        sslcertdir = '/var/lib/puppet/ssl/certs'
 
         # if a signed cert exists or if a CSR exists then we have been bootstrapped previously
         if (
@@ -121,9 +120,21 @@ def puppet_bootstrapped():
 #
 #
 #
+def create_rightscale_puppet_tags(secret):
+        validate_env('RS_SELF_HREF', '^.+$')
+        cmd = "rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]={} tags[]=nd:puppet_state=waiting,nd:puppet_secret={}".format(environ['RS_SELF_HREF'], secret)
+
+        for tag in ['nd:puppet_state=waiting', "nd:puppet_secret={}".format(secret)]:
+                cmd = "rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]={} tags[]={}".format(environ['RS_SELF_HREF'], tag)
+                assert_command(cmd, "Failed to register RightScale tag \'{}\' for Puppet policy-base signing!".format(tag))
+
+
+#
+#
+#
 def create_puppet_agent_cert():
         challenge_password = False
-        preshared_key = str(os.urandom(36))
+        preshared_key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(36))
         
         if "PUPPET_CHALLENGE_PASSWORD" in environ:
                 validate_env('PUPPET_CHALLENGE_PASSWORD', '^.+$')
@@ -135,20 +146,25 @@ def create_puppet_agent_cert():
                 csr_attrs['custom_attributes'] = { '1.2.840.113549.1.9.7' : challenge_password }
 
         try:
-                with open('/etc/puppetlabs/puppet/csr_attributes.yaml', 'w') as outfile:
+                with open('/etc/puppet/csr_attributes.yaml', 'wb') as outfile:
                         outfile.write(yaml.dump(csr_attrs, explicit_start=True, default_flow_style=False))
-        except IOError, e:
+                os.chmod('/etc/puppet/csr_attributes.yaml', 0644)
+                
+                
+        except (IOError, OSError) as e:
                 sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
+
+        create_rightscale_puppet_tags(preshared_key)
 
 
 #
 #
 #
 def initial_puppet_run():
-        cmd = '/opt/puppetlabs/puppet/bin/puppet agent -t --debug --waitforcert 15'
+        cmd = '/usr/bin/puppet agent -t --debug --waitforcert 15'
         assert_command(cmd, 'Initial Puppet run failed!')
-                
-                
+
+
 #
 #
 #
