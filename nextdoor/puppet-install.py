@@ -83,20 +83,11 @@ def bootstrap_puppet_config():
                 assert_command('/opt/puppetlabs/puppet/bin/puppet config set {} {} --section agent'.format(setting, value),
                                'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
                 
-               
         
 #
 #
 #
-def configure_puppet():
-        configure_puppet_external_facts()
-        bootstrap_puppet_config()
-
-
-#
-#
-#
-def install_puppet():
+def install_puppet_agent():
 
         # use one of the supported Puppet Collection releases
         validate_env('PUPPET_COLLECTION_VERSION', '^PC\d+$')
@@ -109,16 +100,71 @@ def install_puppet():
         assert_command('apt-get update', 'Failed to update APT package cache!')
         assert_command('apt-get install -y puppet-agent', 'Failed to install Puppet!')
 
+
+#
+#
+#
+def puppet_bootstrapped():
+        sslcsrdir = '/etc/puppetlabs/puppet/ssl/certificate_reqeusts'
+        sslcertdir = '/etc/puppetlabs/ssl/certs'
+
+        # if a signed cert exists or if a CSR exists then we have been bootstrapped previously
+        if (
+                (os.path.exists(sslcertdir) and [] != os.listdir(sslcertdir)) or
+                (os.path.exists(sslcsrdir) and [] != os.listdir(sslcsrdir))
+        ):
+                return True
+        else:
+                return False
+
+
+#
+#
+#
+def create_puppet_agent_cert():
+        challenge_password = False
+        preshared_key = str(os.urandom(36))
         
+        if "PUPPET_CHALLENGE_PASSWORD" in environ:
+                validate_env('PUPPET_CHALLENGE_PASSWORD', '^.+$')
+                challenge_password = environ['PUPPET_CHALLENGE_PASSWORD']
+
+        csr_attrs = { 'extension_requests' : { 'pp_preshared_key': preshared_key } }
+
+        if challenge_password:
+                csr_attrs['custom_attributes'] = { '1.2.840.113549.1.9.7' : challenge_password }
+
+        try:
+                with open('/etc/puppetlabs/puppet/csr_attributes.yaml', 'w') as outfile:
+                        outfile.write(yaml.dump(csr_attrs, explicit_start=True, default_flow_style=False))
+        except IOError, e:
+                sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
+
+
+#
+#
+#
+def initial_puppet_run():
+        cmd = '/opt/puppetlabs/puppet/bin/puppet agent -t --debug --waitforcert 15'
+        assert_command(cmd, 'Initial Puppet run failed!')
+                
+                
 #
 #
 #
 def main():
     detect_debug_mode()
-    install_dependencies()
-    install_puppet()
-    configure_puppet()
+    if not puppet_bootstrapped():
+            install_dependencies()
+            install_puppet_agent()
+            configure_puppet_external_facts()
+            bootstrap_puppet_config()
+            create_puppet_agent_cert()
+            initial_puppet_run()
+    else:
+            print "   *** Puppet probably bootstrapped previously. Exiting... ***   "
 
+    
 #
 #
 #
