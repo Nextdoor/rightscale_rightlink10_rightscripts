@@ -195,7 +195,7 @@ attribute "PUPPET_ENABLE_REPORTS",
 
 attribute "PUPPET_NODE_NAME_FACT",
           :display_name => "PUPPET_NODE_NAME_FACT",
-          :description  => "Set the node name embedded in the Puppet cert based on this Puppet fact. Defaults to '$::hostname'."
+          :description  => "Set the node name embedded in the Puppet cert based on this Puppet fact. Defaults to '$::hostname'.",
           :required     => "optional",
           :default      => "hostname",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
