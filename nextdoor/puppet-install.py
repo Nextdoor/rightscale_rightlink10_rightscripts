@@ -11,7 +11,7 @@ import os, sys, yaml, string, random
 from os import environ
 
 sys.path.append('./lib/python')
-from utils import detect_debug_mode, assert_command, validate_env, mkdir_p
+from utils import detect_debug_mode, assert_command, validate_env, mkdir_p, normalize_hostname_to_rfc
 
 
 #
@@ -29,9 +29,6 @@ def install_dependencies():
         assert_command('apt-get install -y ' + debs, 'Unable to install required .debs!')
         assert_command('apt-get remove --purge -y ' + blacklist_debs, 'Unable to uninstall blacklisted .debs!')
         assert_command('pip install ' + pips, 'Unable to install pip packages!')
-
-        # now that we have PrettyPrint, let's load it
-        from prettyprint import pp
 
 
 #
@@ -55,7 +52,29 @@ def configure_puppet_external_facts():
                                 outfile.write(yaml.dump(fact_dict, explicit_start=True, default_flow_style=False))
                 except IOError, e:
                         sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno, e.filename, e.strerror))
-                                
+
+
+#
+#
+#
+def resolve_puppet_node_name():
+
+        validate_env('PUPPET_NODE_NAME', '^(facter|cert)$')
+        validate_env('PUPPET_NODE_NAME_FACT', '^.+$')
+        puppet_node_name = environ['PUPPET_NODE_NAME']
+        puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
+        puppet_node = ''
+
+        # if we want the node name to come from PUPPET_NODE value...
+        if 'facter' == puppet_node_name and \
+           'puppet_node' == puppet_node_name:
+                validate_env('PUPPET_NODE', '^.+$')
+                puppet_node = normalize_hostname_to_rfc(environ['PUPPET_NODE'])
+
+        # otherwise we'll let the defaults in metadata.rb handle it
+        
+        return puppet_node              
+
 
 #
 #
@@ -63,6 +82,7 @@ def configure_puppet_external_facts():
 def bootstrap_puppet_config():
         dmc = '^.+$'
         fact_dict = {}
+        
         for key, regex in {
                         'PUPPET_ENVIRONMENT_NAME': dmc,
                         'PUPPET_NODE_NAME_FACT': dmc,
@@ -72,14 +92,19 @@ def bootstrap_puppet_config():
         }.iteritems():
                 validate_env(key, regex)
 
-                
-        for setting, value in {
+        external_facts = {
                         'environment': environ['PUPPET_ENVIRONMENT_NAME'],
                         'node_name_fact': environ['PUPPET_NODE_NAME_FACT'],
                         'server': environ['PUPPET_SERVER_HOSTNAME'],
                         'ca_server': environ['PUPPET_CA_SERVER'],
-                        'report': environ['PUPPET_ENABLE_REPORTS'],
-        }.iteritems():
+                        'report': environ['PUPPET_ENABLE_REPORTS']
+        }
+                 
+        puppet_node_name = resolve_puppet_node_name()
+        if '' != puppet_node_name:
+                external_facts = external_facts.update( { 'node': puppet_node } )
+
+        for key, value in external_facts.iteritems():
                 assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
                                'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
                 
@@ -161,8 +186,8 @@ def create_puppet_agent_cert():
 #
 #
 def initial_puppet_run():
-        cmd = '/usr/bin/puppet agent -t --debug --waitforcert 15'
-        assert_command(cmd, 'Initial Puppet run failed!')
+        cmd = '/usr/bin/puppet agent -t --debug --detailed-exitcodes --waitforcert 15'
+        assert_command(cmd, 'Initial Puppet run failed!', retries=5)
 
 
 #
@@ -178,7 +203,7 @@ def main():
             create_puppet_agent_cert()
             initial_puppet_run()
     else:
-            print "   *** Puppet probably bootstrapped previously. Exiting... ***   "
+            log_and_stdout("   *** Puppet probably bootstrapped previously. Exiting... ***   ")
 
     
 #

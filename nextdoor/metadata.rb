@@ -167,16 +167,14 @@ attribute "PUPPET_CUSTOM_FACTS",
 
 attribute "PUPPET_NODE",
           :display_name => "PUPPET_NODE",
-          :description  =>
-          "Name to pass to the Puppet server as the Node Name. Only used if nd-puppet/config/node_name is 'facter' and nd-puppet/config/node_name_fact is 'puppet_node'.",
+          :description  => "If specified along with PUPPET_NODE_FACT='puppet_node', set the Puppet node name to this value.",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 
 attribute "PUPPET_NODE_NAME",
           :display_name => "PUPPET_NODE_NAME",
-          :description  =>
-          "What node_name supplier to use? Either 'cert' or 'facter'. If 'facter' is used (default) then the nd-puppet/config/puppet_node fact is used as the node name when contacting the puppet master. If 'cert' is used (puppet default), then the raw hostname of the host is used instead, and the nd-puppet/config/puppet_node fact is ignored by Puppet.", 
+          :description  => "Override Puppet node name specified in PUPPET_NODE via specified method: <cert|facter>. If 'facter', use the value returned by execution of PUPPET_NODE_FACT.",
           :default      => "facter",
           :choice       => [ "facter", "cert" ],
           :required     => "optional",
@@ -195,7 +193,7 @@ attribute "PUPPET_ENABLE_REPORTS",
 
 attribute "PUPPET_NODE_NAME_FACT",
           :display_name => "PUPPET_NODE_NAME_FACT",
-          :description  => "Set the node name embedded in the Puppet cert based on this Puppet fact. Defaults to '$::hostname'.",
+          :description  => "PUPPET_NODE_NAME will be generated via the specified Facter fact.",
           :required     => "optional",
           :default      => "hostname",
           :category     => "NEXTDOOR: PUPPET SETTINGS",

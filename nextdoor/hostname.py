@@ -13,28 +13,15 @@ import os
 import re
 
 sys.path.append('./lib/python')
-from utils import detect_debug_mode, assert_command, validate_env
+from utils import detect_debug_mode, assert_command, validate_env, normalize_hostname_to_rfc
 
-
-#
-#
-#
-def normalize_to_rfc(mystr):
-    # LOL!
-    # 1. lower everthing
-    # 2. delete anything which is not alphanumeric
-    # 3 & 4 compress multiple '.' or '-'
-    # 5 strip leading '-'s
-    return re.sub('^[-]+', '', re.sub('[.]{2,}', '.', re.sub('[-]{2,}', '-', re.sub('[^a-z0-9-._]', '', mystr.lower()))))
-    
-    
 
 #
 #
 #
 def normalize_hostname(myservername, myinstanceid):
     myinstanceid = re.sub('[-]+', '', myinstanceid)
-    return re.sub('\.', '', normalize_to_rfc("{}-{}".format(myservername, myinstanceid)))
+    return re.sub('\.', '', normalize_hostname_to_rfc("{}-{}".format(myservername, myinstanceid)))
 
 #
 #
@@ -64,7 +51,7 @@ def set_hostname_w_fqdn():
 #
 #
 def normalize_domain(mydomain):
-    return normalize_to_rfc(mydomain)
+    return normalize_to_hostname_rfc(mydomain)
 
 #
 #
