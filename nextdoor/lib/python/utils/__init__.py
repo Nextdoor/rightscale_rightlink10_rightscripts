@@ -9,8 +9,8 @@ import os, errno, sys, json, re, logging, logging.handlers
 from os import environ
 from subprocess import check_output, PIPE, STDOUT, CalledProcessError
 
-logger = logging.getLogger(sys.argv)
-logger.setLevel(logging.info)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 logger.addHandler(logging.handlers.SysLogHandler())
 
 
@@ -78,13 +78,13 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
             log_and_stdout("retcode: {0} :: {1} :: {2}".format(e.returncode, cmd, e.output))
             ret = e.returncode
 
-    if 0 != ret:
-        if 1 != retries:
-            msg = "Exceeded specified restries: {} :: {}".format(retries, msg)
-            logging.error(msg)
-            sys.exit(msg)
+        if 0 != ret:
+            if attempts == retries:
+                log_and_stdout("Exceeded specified restries: {} :: {}".format(retries, msg))
+                sys.exit(ret)
         else:
-            sys.exit(msg)
+            break
+                
 
     return True
 

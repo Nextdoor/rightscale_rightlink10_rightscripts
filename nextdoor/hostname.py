@@ -51,7 +51,7 @@ def set_hostname_w_fqdn():
 #
 #
 def normalize_domain(mydomain):
-    return normalize_to_hostname_rfc(mydomain)
+    return normalize_hostname_to_rfc(mydomain)
 
 #
 #

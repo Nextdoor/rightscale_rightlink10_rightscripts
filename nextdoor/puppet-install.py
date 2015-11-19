@@ -12,6 +12,8 @@ from os import environ
 
 sys.path.append('./lib/python')
 from utils import detect_debug_mode, assert_command, validate_env, mkdir_p, normalize_hostname_to_rfc
+from utils import log_and_stdout
+
 
 
 #
@@ -104,7 +106,7 @@ def bootstrap_puppet_config():
         if '' != puppet_node_name:
                 external_facts = external_facts.update( { 'node': puppet_node } )
 
-        for key, value in external_facts.iteritems():
+        for setting, value in external_facts.iteritems():
                 assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
                                'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
                 
@@ -129,14 +131,10 @@ def install_puppet_agent():
 #
 #
 def puppet_bootstrapped():
-        sslcsrdir = '/var/lib/puppet/ssl/certificate_requests'
-        sslcertdir = '/var/lib/puppet/ssl/certs'
+        classification_data = '/var/lib/puppet/state/catalog.txt'
 
-        # if a signed cert exists or if a CSR exists then we have been bootstrapped previously
-        if (
-                (os.path.exists(sslcertdir) and [] != os.listdir(sslcertdir)) or
-                (os.path.exists(sslcsrdir) and [] != os.listdir(sslcsrdir))
-        ):
+        # classes.txt only gets dropped on a successful Puppet run.
+        if ( os.path.exists('/var/lib/puppet/state/classes.txt') ):
                 return True
         else:
                 return False
