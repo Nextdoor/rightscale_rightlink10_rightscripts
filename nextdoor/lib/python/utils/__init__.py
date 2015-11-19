@@ -11,7 +11,7 @@ from subprocess import check_output, PIPE, STDOUT, CalledProcessError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.handlers.SysLogHandler())
+logger.addHandler(logging.handlers.SysLogHandler(address='/dev/log'))
 
 
 #
@@ -59,32 +59,34 @@ def log_and_stdout(msg):
 #
 #
 def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
-    
-    log_and_stdout("   *** Executing command: {} ***   ".format(cmd))
 
-    ret = 0
     attempts = 0
-    output = ''
     
     while attempts < retries:
         attempts += 1
+        ret = 0
+        output = ''
+        exout = ''
         try:
+            progress = "   *** Executing command ({} of {} attempts): {} ***   ".format(attempts, retries, cmd)
+            log_and_stdout(progress)
             output = check_output(cmd.split(), stderr=STDOUT, shell=shell, cwd=cwd)
-            log_and_stdout(output)
             
         except CalledProcessError, e:
-            log_and_stdout(output)
-            log_and_stdout("   *** {0} ***   ".format(msg))
-            log_and_stdout("retcode: {0} :: {1} :: {2}".format(e.returncode, cmd, e.output))
             ret = e.returncode
+            exout = e.output
 
         if 0 != ret:
+            log_and_stdout(output)
+            log_and_stdout("retcode: {} :: {} :: {}".format(ret, cmd, exout))
+            log_and_stdout("   *** {} ***   ".format(msg))
+            
             if attempts == retries:
-                log_and_stdout("Exceeded specified restries: {} :: {}".format(retries, msg))
+                log_and_stdout("Exceeded specified retries: {} :: retcode: {} :: {}".format(retries, ret, msg))
                 sys.exit(ret)
         else:
+            log_and_stdout(output)
             break
-                
 
     return True
 
@@ -95,13 +97,13 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
 def validate_env(envvar, regex):
     if not envvar in environ:
         msg = "   *** \'{0}\' not found in environment!  ***".format(envvar)
-        logger.error(msg)
-        sys.exit(msg)
+        log_and_stdout(msg)
+        sys.exit(-1)
 
     if None == re.match(regex, os.environ[envvar]):
         msg = "   *** \'{0}\'=\'{1}\' does not match RE \'{2}\'! ***".format(envvar, os.environ[envvar], regex)
-        logger.error(msg)
-        sys.exit(msg)
+        log_and_stdout(msg)
+        sys.exit(-1)
         
     else:
         return True
@@ -119,14 +121,22 @@ def volumize():
 #
 def detect_debug_mode():
     if "DEBUG" in environ:
-        dump_environment()
+        dump_environment(to_var=True)
 
 
 #
 #
 #
-def dump_environment():
+def dump_environment(to_var=False):
     print(
         json.dumps(environ.__dict__,
                    indent=4,
                    sort_keys=True))
+    if to_var:
+        try:
+            with open('env.sh', 'w') as env_log:
+                env_log.write(
+                for key, value in environ.iteritems():
+                    env_log.write("export{}={}\n".format(key, value))
+        except IOError, e:
+            pass

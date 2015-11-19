@@ -22,7 +22,6 @@ from utils import log_and_stdout
 def install_dependencies():
         debs = 'wget'
         blacklist_debs = 'puppet'
-        pips = 'prettyprint'
                 
         environ['DEBIAN_FRONTEND'] = 'noninteractive'
         environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
@@ -30,7 +29,6 @@ def install_dependencies():
         assert_command('apt-get update', 'Unable to update APT cache!')
         assert_command('apt-get install -y ' + debs, 'Unable to install required .debs!')
         assert_command('apt-get remove --purge -y ' + blacklist_debs, 'Unable to uninstall blacklisted .debs!')
-        assert_command('pip install ' + pips, 'Unable to install pip packages!')
 
 
 #
@@ -145,7 +143,6 @@ def puppet_bootstrapped():
 #
 def create_rightscale_puppet_tags(secret):
         validate_env('RS_SELF_HREF', '^.+$')
-        cmd = "rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]={} tags[]=nd:puppet_state=waiting,nd:puppet_secret={}".format(environ['RS_SELF_HREF'], secret)
 
         for tag in ['nd:puppet_state=waiting', "nd:puppet_secret={}".format(secret)]:
                 cmd = "rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]={} tags[]={}".format(environ['RS_SELF_HREF'], tag)
@@ -183,9 +180,28 @@ def create_puppet_agent_cert():
 #
 #
 #
-def initial_puppet_run():
-        cmd = '/usr/bin/puppet agent -t --debug --detailed-exitcodes --waitforcert 15'
-        assert_command(cmd, 'Initial Puppet run failed!', retries=5)
+def run_puppet_agent():
+
+        cmd = "/usr/bin/puppet agent -t --detailed-exitcodes --waitforcert 15"
+        
+        # These are likely set in puppet.conf before the Puppet agent run however
+        # its entirely possible that a run will change the contents of puppet.conf
+        # but not represent a complete convergence. On follow-up runs we thus cannot
+        # rely on the values specified in puppet.conf. FIXME: make sure all node profiles
+        # converge on first run. ;)
+        
+        dmc = '^.+$' # don't much care
+        
+        for key, value in {
+                        'PUPPET_ENVIRONMENT_NAME': 'environment',
+                        'PUPPET_SERVER_NAME': 'server',
+                        'PUPPET_CA_SERVER': 'ca_server',
+        }.iteritems():
+                if key in environ:
+                        validate_env(key, dmc)
+                        cmd = ''.join(cmd, " --{} {}".format(value, environ[key]))
+
+        assert_command(cmd, 'Puppet run failed!', retries=5)
 
 
 #
@@ -199,7 +215,7 @@ def main():
             configure_puppet_external_facts()
             bootstrap_puppet_config()
             create_puppet_agent_cert()
-            initial_puppet_run()
+            run_puppet_agent()
     else:
             log_and_stdout("   *** Puppet probably bootstrapped previously. Exiting... ***   ")
 
