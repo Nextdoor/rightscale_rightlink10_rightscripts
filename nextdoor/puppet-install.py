@@ -194,12 +194,12 @@ def run_puppet_agent():
         
         for key, value in {
                         'PUPPET_ENVIRONMENT_NAME': 'environment',
-                        'PUPPET_SERVER_NAME': 'server',
+                        'PUPPET_SERVER_HOSTNAME': 'server',
                         'PUPPET_CA_SERVER': 'ca_server',
         }.iteritems():
                 if key in environ:
                         validate_env(key, dmc)
-                        cmd = ''.join(cmd, " --{} {}".format(value, environ[key]))
+                        cmd = ''.join((cmd, " --{} {}".format(value, environ[key])))
 
         assert_command(cmd, 'Puppet run failed!', retries=5)
 

@@ -5,13 +5,13 @@
 ## Author: Nathan Valentine <nathan@nextdoor.com>
 ##
 
-import os, errno, sys, json, re, logging, logging.handlers
+import os, errno, sys, json, re, logging, logging.handlers, time
 from os import environ
 from subprocess import check_output, PIPE, STDOUT, CalledProcessError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.handlers.SysLogHandler(address='/dev/log'))
+logger.addHandler(logging.handlers.SysLogHandler())
 
 
 #
@@ -61,12 +61,12 @@ def log_and_stdout(msg):
 def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
 
     attempts = 0
-    
+
     while attempts < retries:
         attempts += 1
         ret = 0
         output = ''
-        exout = ''
+
         try:
             progress = "   *** Executing command ({} of {} attempts): {} ***   ".format(attempts, retries, cmd)
             log_and_stdout(progress)
@@ -74,13 +74,12 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
             
         except CalledProcessError, e:
             ret = e.returncode
-            exout = e.output
+            output = e.output
 
         if 0 != ret:
             log_and_stdout(output)
-            log_and_stdout("retcode: {} :: {} :: {}".format(ret, cmd, exout))
-            log_and_stdout("   *** {} ***   ".format(msg))
-            
+            log_and_stdout("retcode: {} :: {}".format(ret, cmd))
+
             if attempts == retries:
                 log_and_stdout("Exceeded specified retries: {} :: retcode: {} :: {}".format(retries, ret, msg))
                 sys.exit(ret)
@@ -135,8 +134,8 @@ def dump_environment(to_var=False):
     if to_var:
         try:
             with open('env.sh', 'w') as env_log:
-                env_log.write(
-                for key, value in environ.__dict__.iteritems():
-                    env_log.write("export{}={}\n".format(key, value))
+                env_log.write("# {}\n".format(time.strftime("%c")))
+                for key, value in environ.iteritems():
+                    env_log.write("export {}={}\n".format(key, value))
         except IOError, e:
             pass
