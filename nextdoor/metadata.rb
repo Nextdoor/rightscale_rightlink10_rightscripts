@@ -248,3 +248,14 @@ attribute "EC2_PLACEMENT_AVAILABILITY_ZONE",
           :required => "optional",
           :style => "string",
           :recipes => ['nextdoor::elb-connect', 'nextdoor::elb-disconnect']
+
+attribute "EC2_INSTANCE_ID",
+          :category => "LOAD_BALANCER",
+          :display_name => "EC2_INSTANCE_ID",
+          :description => "AWS EC2 instance ID for LB reg/de-reg",
+          :require => "optional",
+          :style => "string",
+          :recipes => ['nextdoor::elb-connect', 'nextdoor::elb-disconnect']
+
+
+
