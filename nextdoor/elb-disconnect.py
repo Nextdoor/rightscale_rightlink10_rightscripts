@@ -1,7 +1,7 @@
 #! /usr/bin/sudo /usr/bin/python
 
 # ---
-# RightScript Name: nextdoor::elb-connect
+# RightScript Name: nextdoor::elb-disconnect
 # Description: 
 # Packages: 
 # ...
@@ -21,7 +21,7 @@ from utils import log_and_stdout
 #
 #
 #
-def elb_connect():
+def elb_disconnect():
     dmc = '^.+$' # don't much care
 
     if 'ELB_NAME' in environ:
@@ -42,12 +42,12 @@ def elb_connect():
         
         # create and execute the Kingpin script for ELB reg
         try:
-            template_file = './lib/kingpin/templates/elb-connect.json.template'
+            template_file = './lib/kingpin/templates/elb-disconnect.json.template'
             with NamedTemporaryFile as kp_script:
                 kp_script.write(Template(open(template_file).read()).safe_substitute(environ))
                 kp_script.flush()
                 kp_script.seek(0)
-                log_and_stdout("   *** Kingpin ELB connect script : \n{}".format(kp_script.read()))
+                log_and_stdout("   *** Kingpin ELB disconnect script : \n{}".format(kp_script.read()))
                 environ['SKIP_DRY'] = 1
                 assert_command("python /tmp/kingpin {}".format(kp_script.name))
 
@@ -57,7 +57,7 @@ def elb_connect():
                 errno = e.errno
                 log_and_stdout("   *** Failed when creating Kingpin script! ***\{}\nerr: {}".format(message, errno))
 
-        assert_command('rm -rf /tmp/kingpin', "Failed to remove temporary Kingpin instance!")
+        assert_command('rm -rf /tmp/kingpin', 'Failed to remove temporary Kingpin instance!')
             
     else:
         log_and_stdout('   *** No ELB_NAME specified and thus no ELB membership. This is not an error! ***   ')

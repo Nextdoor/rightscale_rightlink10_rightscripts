@@ -9,7 +9,7 @@ recipe      "nextdoor::mounts", "Configure /mnt"
 recipe      "nextdoor::hostname", "Configure hostname + domain"
 recipe      "nextdoor::puppet-install", "Install the Puppet agent"
 recipe      "nextdoor::elb-connect", "Register to an ELB"
-
+recipe      "nextdoor::elb-disconnect", "Deregister to an ELB"
 
 attribute "RS_CLOUD_PROVIDER",
           :category => "CLOUD",
@@ -57,7 +57,7 @@ attribute "AWS_ACCESS_KEY_ID",
           :description => ";)",
           :required => "required",
           :type => "string",
-          :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect']
+          :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect', 'nextdoor::elb-disconnect']
 
 attribute "AWS_SECRET_ACCESS_KEY",
           :category => "CLOUD",
@@ -65,7 +65,7 @@ attribute "AWS_SECRET_ACCESS_KEY",
           :description => ";)",
           :required => "required",
           :type => "string",
-          :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect']
+          :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect', 'nextdoor::elb-disconnect']
 
 attribute "STORAGE_TYPE",
           :category => "STORAGE",
@@ -138,7 +138,7 @@ attribute "INSTANCE_ID",
           :description => "Cloud specific Instance ID (ie, i-12341234)",
           :require => "optional",
           :type => "string",
-          :recipes => ['nextdoor::dump-env', 'nextdoor::hostname', 'nextdoor::elb-connect']
+          :recipes => ['nextdoor::dump-env', 'nextdoor::hostname', 'nextdoor::elb-connect', 'nextdoor::elb-disconnect']
 
 attribute "SERVER_NAME",
           :category => "NEXTDOOR: HOSTNAME SETTINGS",
@@ -239,7 +239,7 @@ attribute "ELB_NAME",
           :description => "The is the name of the ELB you gave in RightScale or the Amazon AWS console. Note: This is the short name and *not* the FQDN.",
           :required => "optional",
           :type => "string",
-          :recipes => ['nextdoor::elb-connect']
+          :recipes => ['nextdoor::elb-connect', 'nextdoor::elb-disconnect']
 
 attribute "EC2_PLACEMENT_AVAILABILITY_ZONE",
           :category => "LOAD_BALANCER",
@@ -247,5 +247,4 @@ attribute "EC2_PLACEMENT_AVAILABILITY_ZONE",
           :description => "??",
           :required => "optional",
           :style => "string",
-          :recipes => ['nextdoor::elb-connect']              
-          
+          :recipes => ['nextdoor::elb-connect', 'nextdoor::elb-disconnect']
