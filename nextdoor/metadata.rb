@@ -8,7 +8,8 @@ recipe      "nextdoor::dump-env", "Print environment variables for debugging pur
 recipe      "nextdoor::mounts", "Configure /mnt"
 recipe      "nextdoor::hostname", "Configure hostname + domain"
 recipe      "nextdoor::puppet-install", "Install the Puppet agent"
-#recipe      "nextdoor::puppet-run", "Run Puppet agent"
+recipe      "nextdoor::elb-connect", "Register to an ELB"
+
 
 attribute "RS_CLOUD_PROVIDER",
           :category => "CLOUD",
