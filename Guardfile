@@ -5,6 +5,6 @@ guard 'remote-sync',
       :user => 'root',
       :remote_address => ENV['RIGHTLINK10_NODE'] do
 
-  watch(%r{^.+\.(pp|sh|py)$})
+  watch(%r{^.+\.(pp|sh|py|template)$})
   
 end

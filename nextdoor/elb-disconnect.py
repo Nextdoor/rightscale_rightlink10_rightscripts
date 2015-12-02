@@ -38,18 +38,18 @@ def elb_disconnect():
 
         # install disposable Kingpin
         assert_command('mkdir -p /tmp/kingpin', 'Failed to create directory for temporary Kingpin script!')
-        assert_command('unzip -o -u ./lib/kingping/kingping.zip -d /tmp/kingpin', 'Failed to unpack temporary Kingpin instance!')
+        assert_command('unzip -o -u ./lib/kingpin/kingpin.zip -d /tmp/kingpin', 'Failed to unpack temporary Kingpin instance!')
         
         # create and execute the Kingpin script for ELB reg
         try:
             template_file = './lib/kingpin/templates/elb-disconnect.json.template'
-            with NamedTemporaryFile as kp_script:
+            with NamedTemporaryFile() as kp_script:
                 kp_script.write(Template(open(template_file).read()).safe_substitute(environ))
                 kp_script.flush()
                 kp_script.seek(0)
                 log_and_stdout("   *** Kingpin ELB disconnect script : \n{}".format(kp_script.read()))
-                environ['SKIP_DRY'] = 1
-                assert_command("python /tmp/kingpin {}".format(kp_script.name))
+                environ['SKIP_DRY'] = "1"
+                assert_command("python /tmp/kingpin {}".format(kp_script.name), "Failed during Kingpin run!")
 
         except (IOError, KeyError), e:
             errno = -1
@@ -67,7 +67,7 @@ def elb_disconnect():
 #
 def main():
     detect_debug_mode()
-    elb_connect()
+    elb_disconnect()
     
 
 #
