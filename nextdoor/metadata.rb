@@ -56,7 +56,7 @@ attribute "AWS_ACCESS_KEY_ID",
           :description => ";)",
           :required => "required",
           :type => "string",
-          :recipes => ['nextdoor::mounts']
+          :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect']
 
 attribute "AWS_SECRET_ACCESS_KEY",
           :category => "CLOUD",
@@ -64,7 +64,7 @@ attribute "AWS_SECRET_ACCESS_KEY",
           :description => ";)",
           :required => "required",
           :type => "string",
-          :recipes => ['nextdoor::mounts']
+          :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect']
 
 attribute "STORAGE_TYPE",
           :category => "STORAGE",
@@ -137,7 +137,7 @@ attribute "INSTANCE_ID",
           :description => "Cloud specific Instance ID (ie, i-12341234)",
           :require => "optional",
           :type => "string",
-          :recipes => ['nextdoor::dump-env', 'nextdoor::hostname']
+          :recipes => ['nextdoor::dump-env', 'nextdoor::hostname', 'nextdoor::elb-connect']
 
 attribute "SERVER_NAME",
           :category => "NEXTDOOR: HOSTNAME SETTINGS",
@@ -231,5 +231,20 @@ attribute "PUPPET_ENVIRONMENT_NAME",
           :required     => "recommended",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
-                    
+
+attribute "ELB_NAME",
+          :category => "LOAD_BALANCER",
+          :display_name => "ELB_NAME",
+          :description => "The is the name of the ELB you gave in RightScale or the Amazon AWS console. Note: This is the short name and *not* the FQDN.",
+          :required => "optional",
+          :type => "string",
+          :recipes => ['nextdoor::elb-connect']
+
+attribute "EC2_PLACEMENT_AVAILABILITY_ZONE",
+          :category => "LOAD_BALANCER",
+          :display_name => "EC2_PLACEMENT_AVAILABILITY_ZONE",
+          :description => "??",
+          :required => "optional",
+          :style => "string",
+          :recipes => ['nextdoor::elb-connect']              
           

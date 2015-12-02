@@ -1,0 +1,11 @@
+# to be used with Python String template
+{
+  "desc": "Add myself to ELB",
+  "actor": "aws.elb.RegisterInstance",
+  "options": {
+    "region": "$EC2_PLACEMENT_AVAILABILITY_ZONE",
+    "elb": "$ELB_NAME",
+    "enable_zones": false,
+    "instances": "$EC2_INSTANCE_ID"
+  }
+}
