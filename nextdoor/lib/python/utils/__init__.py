@@ -1,11 +1,18 @@
 ##
 ##
-## Python utility functions for RightScale RightScript use.
+# Python utility functions for RightScale RightScript use.
 ##
-## Author: Nathan Valentine <nathan@nextdoor.com>
+# Author: Nathan Valentine <nathan@nextdoor.com>
 ##
 
-import os, errno, sys, json, re, logging, logging.handlers, time
+import os
+import errno
+import sys
+import json
+import re
+import logging
+import logging.handlers
+import time
 from os import environ
 from subprocess import check_output, STDOUT, CalledProcessError
 
@@ -32,10 +39,11 @@ def normalize_hostname_to_rfc(mystr):
 def mkdir_p(path):
     try:
         os.makedirs(path)
-    except OSError as exc: # Python >2.5
+    except OSError as exc:  # Python >2.5
         if errno.EEXIST == exc.errno and os.path.isdir(path):
             pass
-        else: raise
+        else:
+            raise
 
 
 #
@@ -46,7 +54,7 @@ def is_volumized():
         return True
     else:
         return False
-    
+
 
 #
 #
@@ -54,10 +62,12 @@ def is_volumized():
 def log_and_stdout(msg):
     logger.info(msg)
     print msg
-    
+
 #
 #
 #
+
+
 def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
 
     attempts = 0
@@ -68,10 +78,12 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
         output = ''
 
         try:
-            progress = "   *** Executing command ({} of {} attempts): {} ***   ".format(attempts, retries, cmd)
+            progress = "   *** Executing command ({} of {} attempts): {} ***   ".format(
+                attempts, retries, cmd)
             log_and_stdout(progress)
-            output = check_output(cmd.split(), stderr=STDOUT, shell=shell, cwd=cwd)
-            
+            output = check_output(
+                cmd.split(), stderr=STDOUT, shell=shell, cwd=cwd)
+
         except CalledProcessError, e:
             ret = e.returncode
             output = e.output
@@ -81,7 +93,8 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
             log_and_stdout("retcode: {} :: {}".format(ret, cmd))
 
             if attempts == retries:
-                log_and_stdout("Exceeded specified retries: {} :: retcode: {} :: {}".format(retries, ret, msg))
+                log_and_stdout(
+                    "Exceeded specified retries: {} :: retcode: {} :: {}".format(retries, ret, msg))
                 sys.exit(ret)
         else:
             log_and_stdout(output)
@@ -100,10 +113,11 @@ def validate_env(envvar, regex):
         sys.exit(-1)
 
     if None == re.match(regex, os.environ[envvar]):
-        msg = "   *** \'{0}\'=\'{1}\' does not match RE \'{2}\'! ***".format(envvar, os.environ[envvar], regex)
+        msg = "   *** \'{0}\'=\'{1}\' does not match RE \'{2}\'! ***".format(
+            envvar, os.environ[envvar], regex)
         log_and_stdout(msg)
         sys.exit(-1)
-        
+
     else:
         return True
 
@@ -112,7 +126,8 @@ def validate_env(envvar, regex):
 #
 #
 def volumize():
-    assert_command('mkdir -p /etc/nextdoor/volumized', "Could not create Nextdoor's volumize lock file!")
+    assert_command('mkdir -p /etc/nextdoor/volumized',
+                   "Could not create Nextdoor's volumize lock file!")
 
 
 #

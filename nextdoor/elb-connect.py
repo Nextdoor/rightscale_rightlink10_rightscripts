@@ -33,35 +33,43 @@ def elb_connect():
             utils.validate_env(key, validation)
 
         # install disposable Kingpin
-        utils.assert_command('mkdir -p /tmp/kingpin', 'Failed to create directory for temporary Kingpin script!')
-        utils.assert_command('unzip -o -u ./lib/kingpin/kingpin.zip -d /tmp/kingpin', 'Failed to unpack temporary Kingpin instance!')
+        utils.assert_command(
+            'mkdir -p /tmp/kingpin', 'Failed to create directory for temporary Kingpin script!')
+        utils.assert_command('unzip -o -u ./lib/kingpin/kingpin.zip -d /tmp/kingpin',
+                             'Failed to unpack temporary Kingpin instance!')
 
         # create and execute the Kingpin script for ELB reg
         #
         # Note: this dereferences envvars and plugs them into the JSON.
         #   Kingpin can handlel this dereferencing as well butI do it here for transparency in that
-        #   I also validate and print the resulting template when in DEBUG mode.
+        # I also validate and print the resulting template when in DEBUG mode.
         try:
             template_file = './lib/kingpin/templates/elb-connect.json.template'
             with NamedTemporaryFile() as kp_script:
-                kp_script.write(Template(open(template_file).read()).safe_substitute(environ))
+                kp_script.write(
+                    Template(open(template_file).read()).safe_substitute(environ))
                 kp_script.flush()
                 kp_script.seek(0)
-                utils.log_and_stdout("   *** Kingpin ELB connect script : \n{}".format(kp_script.read()))
+                utils.log_and_stdout(
+                    "   *** Kingpin ELB connect script : \n{}".format(kp_script.read()))
                 environ['SKIP_DRY'] = "1"
-                utils.assert_command("python /tmp/kingpin {}".format(kp_script.name), "Failed during Kingpin run!")
+                utils.assert_command(
+                    "python /tmp/kingpin {}".format(kp_script.name), "Failed during Kingpin run!")
 
         except (IOError, KeyError), e:
             errno = -1
             if 'IOError' == type(e):
                 errno = e.errno
                 message = e.strerror
-                utils.log_and_stdout("   *** Failed when creating Kingpin script! ***\{}\nerr: {}".format(message, errno))
+                utils.log_and_stdout(
+                    "   *** Failed when creating Kingpin script! ***\{}\nerr: {}".format(message, errno))
 
-        utils.assert_command('rm -rf /tmp/kingpin', "Failed to remove temporary Kingpin instance!")
-            
+        utils.assert_command('rm -rf /tmp/kingpin',
+                             "Failed to remove temporary Kingpin instance!")
+
     else:
-        utils.log_and_stdout('   *** No ELB_NAME specified and thus no ELB membership. This is not an error! ***   ')
+        utils.log_and_stdout(
+            '   *** No ELB_NAME specified and thus no ELB membership. This is not an error! ***   ')
 
 
 #
@@ -70,7 +78,7 @@ def elb_connect():
 def main():
     utils.detect_debug_mode()
     elb_connect()
-    
+
 
 #
 #

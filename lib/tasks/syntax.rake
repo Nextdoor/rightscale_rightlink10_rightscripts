@@ -2,6 +2,10 @@ require 'yaml'
 require 'json'
 require 'colorize'
 
+unless Dir.chdir Rake.application.original_dir 
+  abort "Failed setting cwd to location of Rakefile!".red
+end
+
 desc 'Check All The Syntax!'
 task :syntax do
   puts "Executing task 'syntax'...".green

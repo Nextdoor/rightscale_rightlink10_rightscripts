@@ -2,10 +2,10 @@
 
 # ---
 # RightScript Name: hostname
-# Description: 
-# Packages: 
+# Description:
+# Packages:
 # ...
-# 
+#
 
 
 import sys
@@ -26,6 +26,8 @@ def normalize_hostname(myservername, myinstanceid):
 #
 #
 #
+
+
 def set_hostname_w_fqdn():
     for key, regex in {
             'SERVER_NAME': '^.+$',
@@ -43,8 +45,10 @@ def set_hostname_w_fqdn():
 
     # Because RightScale appears to eat stdout. :\
 #    assert_command("echo {}.{} > /etc/hostname".format(myhostname, mydomain), "Could not modify /etc/hostname!")
-    assert_command("augtool set /files/etc/hostname/hostname {}.{}".format(myhostname, mydomain), "Could not modify /etc/hostname!")
-    assert_command("hostname -F /etc/hostname", "Failed when executing 'hostname' command!")
+    assert_command("augtool set /files/etc/hostname/hostname {}.{}".format(
+        myhostname, mydomain), "Could not modify /etc/hostname!")
+    assert_command("hostname -F /etc/hostname",
+                   "Failed when executing 'hostname' command!")
 
 
 #
@@ -56,23 +60,27 @@ def normalize_domain(mydomain):
 #
 #
 #
+
+
 def install_dependencies():
-    assert_command('apt-get install -y augeas-tools', 'Failed to install Augeas!')
-    
+    assert_command('apt-get install -y augeas-tools',
+                   'Failed to install Augeas!')
+
 #
 #
 #
+
+
 def main():
     detect_debug_mode()
     validate_env('RS_CLOUD_PROVIDER', '^(ec2|google)$')
     if not 'ec2' == os.environ['RS_CLOUD_PROVIDER']:
-        sys.exit("RS_CLOUD_PROVIDER=\'{}\' not supported!".format(os.environ['RS_CLOUD_PROVIDER']))
+        sys.exit("RS_CLOUD_PROVIDER=\'{}\' not supported!".format(
+            os.environ['RS_CLOUD_PROVIDER']))
     else:
         install_dependencies()
         set_hostname_w_fqdn()
 
-        
+
 if '__main__' == __name__:
     main()
-
-        
