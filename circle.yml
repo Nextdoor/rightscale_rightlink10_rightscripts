@@ -1,0 +1,11 @@
+---
+machine:
+  ruby:
+    version: 2.2.3
+
+test:
+  pre:
+    - bundle exec rake prep
+  override:
+    - bundle exec rake syntax
+    - bundle exec rake lint
