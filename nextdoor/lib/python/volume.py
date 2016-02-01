@@ -385,7 +385,8 @@ def create_raid_volume(vols,raid_type):
         sys.exit(1)
 
     # Get our UUID from the mdadm array
-    md_uuid = commands.getoutput("blkid " + MD_VOL + " | awk '{print $2}'")
+    # md_uuid = commands.getoutput("blkid " + MD_VOL + " | awk '{print $2}'")
+    # flake8 reports this is dead code ^^
 
     # Grep out any old md configs form mdadm.conf
     os.system("cat " + md_conf + " | grep -v UUID > " + md_conf)

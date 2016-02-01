@@ -62,7 +62,8 @@ def resolve_puppet_node_name():
         validate_env('PUPPET_NODE_NAME', '^(facter|cert)$')
         validate_env('PUPPET_NODE_NAME_FACT', '^.+$')
         puppet_node_name = environ['PUPPET_NODE_NAME']
-        puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
+#        puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
+# flake8 says this is dead code ^^
         puppet_node = ''
 
         # if we want the node name to come from PUPPET_NODE value...
@@ -81,7 +82,6 @@ def resolve_puppet_node_name():
 #
 def bootstrap_puppet_config():
         dmc = '^.+$'
-        fact_dict = {}
         
         for key, regex in {
                         'PUPPET_ENVIRONMENT_NAME': dmc,
@@ -102,7 +102,7 @@ def bootstrap_puppet_config():
                  
         puppet_node_name = resolve_puppet_node_name()
         if '' != puppet_node_name:
-                external_facts = external_facts.update( { 'node': puppet_node } )
+                external_facts = external_facts.update( { 'node': puppet_node_name } )
 
         for setting, value in external_facts.iteritems():
                 assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
@@ -132,7 +132,7 @@ def puppet_bootstrapped():
         classification_data = '/var/lib/puppet/state/catalog.txt'
 
         # classes.txt only gets dropped on a successful Puppet run.
-        if ( os.path.exists('/var/lib/puppet/state/classes.txt') ):
+        if ( os.path.exists(classification_data) ):
                 return True
         else:
                 return False

@@ -7,7 +7,7 @@
 
 import os, errno, sys, json, re, logging, logging.handlers, time
 from os import environ
-from subprocess import check_output, PIPE, STDOUT, CalledProcessError
+from subprocess import check_output, STDOUT, CalledProcessError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -137,5 +137,5 @@ def dump_environment(to_var=False):
                 env_log.write("# {}\n".format(time.strftime("%c")))
                 for key, value in environ.iteritems():
                     env_log.write("export {}={}\n".format(key, value))
-        except IOError, e:
+        except IOError:
             pass

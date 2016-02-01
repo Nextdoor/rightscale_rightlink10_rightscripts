@@ -7,14 +7,13 @@
 # ...
 #
 
-import os
 from os import environ
 from tempfile import NamedTemporaryFile
 from string import Template
 
 import sys
 sys.path.append('./lib/python')
-from utils import detect_debug_mode, assert_command, validate_env, mkdir_p
+from utils import detect_debug_mode, assert_command, validate_env
 from utils import log_and_stdout
 
 
@@ -55,6 +54,7 @@ def elb_disconnect():
             errno = -1
             if 'IOError' == type(e):
                 errno = e.errno
+                message = e.strerror
                 log_and_stdout("   *** Failed when creating Kingpin script! ***\{}\nerr: {}".format(message, errno))
 
         assert_command('rm -rf /tmp/kingpin', 'Failed to remove temporary Kingpin instance!')

@@ -12,10 +12,7 @@ if os.system("which mdadm > /dev/null") > 0:
     if is_apt == 0: os.system("apt-get install -y -f mdadm")
     if is_yum == 0: os.system("yum install -y mdadm")
 
-import commands
-import time
 import sys
-import socket
 import stat
 import optparse
 
@@ -158,7 +155,8 @@ def create_raid_volume(vols,raid_type):
         sys.exit(1)
 
     # Get our UUID from the mdadm array
-    md_uuid = commands.getoutput("blkid " + MD_VOL + " | awk '{print $2}'")
+    # md_uuid = commands.getoutput("blkid " + MD_VOL + " | awk '{print $2}'")
+    # flake8 reports this is dead code ^^
 
     # Grep out any old md configs form mdadm.conf
     os.system("cat " + md_conf + " | grep -v UUID > " + md_conf)
