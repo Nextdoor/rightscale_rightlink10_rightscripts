@@ -2,7 +2,7 @@
 
 # rightscale_rightlink10_rightscripts
 
-Various Boot and Operational scripts for use with Rightlink10.
+Various Boot and Operational scripts for use with RightScale RightLink10.
 
 ## Requirements
 
