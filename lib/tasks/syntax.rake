@@ -36,9 +36,7 @@ task :syntax do
 
   puts "Syntax checking Python files..."
   python_files = FileList['**/*.py'].exclude(/bundle/)
-  python_files.each do |python_file|
-    puts "Checking #{python_file}..."
-    %x{python -m py_compile #{python_file}}
+  unless system("pyflakes #{python_files}")
+    abort("Syntax check failed. Exit code: #{$?.exitstatus}")
   end
-
 end
