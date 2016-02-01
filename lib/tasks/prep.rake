@@ -1,18 +1,24 @@
+begin
+  require 'colorize'
+rescue LoadError
+  abort("colorize gem not found!")
+end
+
 desc 'Install supporting tooling for syntax|lint|etc checks.'
 task :prep do
-  puts "Executing task 'prep'..."
+  puts "Executing task 'prep'...".green
 
   unless Dir.chdir Rake.application.original_dir 
-    abort "Failed setting cwd to location of Rakefile!"
+    abort "Failed setting cwd to location of Rakefile!".red
   end
     
-  puts "Executing 'bundle install'..."
-  system('bundle install')
-  puts "Exit status: #{$?.exitstatus}"
+  puts "Executing 'bundle install'...".green
+  unless system('bundle install') 
+    abort "Exit status: #{$?.exitstatus}".red
+  end
 
-  puts ""
-  
-  puts "Executing 'pip install -r requirements.txt'..."
-  system('pip install -r requirements.txt')
-  puts "Exit status: #{$?.exitstatus}"
+  puts "Executing 'pip install -r requirements.txt'...".green
+  unless system('pip install -r requirements.txt')
+    puts "Exit status: #{$?.exitstatus}".red
+  end
 end
