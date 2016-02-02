@@ -1,7 +1,6 @@
 language: ruby
 bundler_args: --without development
 before_install: rm Gemfile.lock || true
-sudo: required
-rvm:
-  - 2.2.3
+python:
+  - 3.4.3
 script: bundle exec rake test
