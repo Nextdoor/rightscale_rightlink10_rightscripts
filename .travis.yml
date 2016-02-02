@@ -4,7 +4,7 @@ before_install:
   - rm Gemfile.lock || true
   - apt-get update && apt-get install -y rubygems
   - gem install bundler colorize
-sudo: false
+sudo: required
 python:
   - 2.7
 script: bundle exec rake test
