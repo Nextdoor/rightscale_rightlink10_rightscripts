@@ -1,6 +1,9 @@
 language: python
 bundler_args: --without development
-before_install: rm Gemfile.lock || true
+before_install:
+  - rm Gemfile.lock || true
+  - apt-get update && apt-get install -y rubygems
+  - gem install bundler colorize
 sudo: false
 python:
   - 2.7
