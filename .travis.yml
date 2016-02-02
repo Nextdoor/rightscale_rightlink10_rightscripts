@@ -2,8 +2,8 @@ language: python
 bundler_args: --without development
 before_install:
   - rm Gemfile.lock || true
-  - apt-get update && apt-get install -y rubygems
-  - gem install bundler colorize
+  - sudo apt-get update && sudo apt-get install -y rubygems
+  - sudo gem install bundler colorize
 sudo: required
 python:
   - 2.7
