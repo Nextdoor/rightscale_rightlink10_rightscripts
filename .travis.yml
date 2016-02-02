@@ -7,4 +7,4 @@ before_install:
 sudo: required
 python:
   - 2.7
-script: bundle exec rake test
+script: sudo bundle exec rake test
