@@ -9,39 +9,39 @@ is_yum = os.system("which yum > /dev/null")
 
 # Check if mdadm exists
 if os.system("which mdadm > /dev/null") > 0:
-    if is_apt == 0: os.system("apt-get install -y -f mdadm")
-    if is_yum == 0: os.system("yum install -y mdadm")
+    if is_apt == 0:
+        os.system("apt-get install -y -f mdadm")
+    if is_yum == 0:
+        os.system("yum install -y mdadm")
 
-import commands
-import time
 import sys
-import socket
 import stat
 import optparse
 
 # Defaults
 VERSION = 1.0
-MD_VOL="/dev/md127"
-DEFAULT_VOLTYPE='instance'
-DEFAULT_MOUNTPOINT='/mnt'
-DEFAULT_RAIDTYPE=0
-DEFAULT_FSTYPE='ext4'
-DEFAULT_INSTANCE_VOL_LIST=[ "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde" ]
-DEFAULT_MOUNTOPTS='defaults,noatime,nodiratime,nobootwait'
+MD_VOL = "/dev/md127"
+DEFAULT_VOLTYPE = 'instance'
+DEFAULT_MOUNTPOINT = '/mnt'
+DEFAULT_RAIDTYPE = 0
+DEFAULT_FSTYPE = 'ext4'
+DEFAULT_INSTANCE_VOL_LIST = ["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"]
+DEFAULT_MOUNTOPTS = 'defaults,noatime,nodiratime,nobootwait'
 
 # First handle all of the options passed to us
 usage = "usage: %prog -a instance -m <mountpoint> -f <fstype> -r <raidlevel>"
 
-parser = optparse.OptionParser(usage=usage, version=VERSION, add_help_option=True)
+parser = optparse.OptionParser(
+    usage=usage, version=VERSION, add_help_option=True)
 parser.set_defaults(verbose=True)
 parser.add_option("-a", "--action", dest="action",
-        help="instance/ebs/remount-ebs")
+                  help="instance/ebs/remount-ebs")
 parser.add_option("-m", "--mountpoint", dest="mountpoint",
-        help="where to mount the created volume")
+                  help="where to mount the created volume")
 parser.add_option("-f", "--fstype", dest="fstype", default=DEFAULT_FSTYPE,
-        help="(instance/ebs) filesystem type to format the volume")
+                  help="(instance/ebs) filesystem type to format the volume")
 parser.add_option("-r", "--raidlevel", dest="raidlevel", default=DEFAULT_RAIDTYPE,
-        help="(instance/ebs) raid level to use: 0, 1")
+                  help="(instance/ebs) raid level to use: 0, 1")
 (options, args) = parser.parse_args()
 
 # Sanity check our input.
@@ -49,6 +49,8 @@ if not options.mountpoint:
     parser.error("must specify a mountpoint with -m/--mountpoint")
 
 #### Functions go here ####
+
+
 def get_ephemeral_volumes(instance_vol_list):
     """get_ephemeral_volumes() returns an array of volumes that are ready
     to be turned into an array. These volumes will be unmounted, and
@@ -61,29 +63,33 @@ def get_ephemeral_volumes(instance_vol_list):
     for potential_volume in instance_vol_list:
         # Check if the volume exists...
         print "INFO: (%s) checking if ephemeral vol is available..." % (potential_volume)
-        if not os.path.exists(potential_volume): continue
-        if not stat.S_ISBLK(os.stat(potential_volume).st_mode): continue
+        if not os.path.exists(potential_volume):
+            continue
+        if not stat.S_ISBLK(os.stat(potential_volume).st_mode):
+            continue
 
         # If the volume exists, make sure its not mounted. If we cannot unmount it for some reason,
         # skip this drive
-        cmd = "mount | grep '^" + potential_volume + "' | awk '{print $3}' | xargs --no-run-if-empty umount -f"
+        cmd = "mount | grep '^" + potential_volume + \
+            "' | awk '{print $3}' | xargs --no-run-if-empty umount -f"
         os.system(cmd)
 
-        # We got through our checks... add this item to our array of valid drives to use
+        # We got through our checks... add this item to our array of valid
+        # drives to use
         print "INFO: (%s) is available, adding it to our list..." % (potential_volume)
         valid_volumes.append(potential_volume)
 
     # If we have less than two drives available, exit quietly.
     if valid_volumes.__len__() < 2:
         os.system("mount -a")
-	print "INFO: Less than 2 volumes found -- exiting quietly."
+        print "INFO: Less than 2 volumes found -- exiting quietly."
         sys.exit(0)
 
     # Return our valid volumes
     return valid_volumes
 
 
-def create_raid_volume(vols,raid_type):
+def create_raid_volume(vols, raid_type):
     """ create_raid_volume(vols) creates a mdadm raid volume from the volumes
     that are passed ot it in the 'vols' array. if the volumes already have
     an mdadm array, then we just sanity check it and move on. """
@@ -92,9 +98,9 @@ def create_raid_volume(vols,raid_type):
     # md volumes, so if one exists, we exit quietly.
 
     # If the file exists, skip to the next one...
-    if os.system("mdadm -D " + MD_VOL +" 2>&1") == 0:
+    if os.system("mdadm -D " + MD_VOL + " 2>&1") == 0:
         vol_list = '|'.join(vols)
-        if os.system("mdadm -D " + MD_VOL +" 2>&1 | egrep '" + vol_list + "' 2>&1") == 0:
+        if os.system("mdadm -D " + MD_VOL + " 2>&1 | egrep '" + vol_list + "' 2>&1") == 0:
             print "WARNING: " + MD_VOL + " already exists and actually has our volumes in it, using that and passing it back."
             return MD_VOL
         else:
@@ -114,12 +120,13 @@ def create_raid_volume(vols,raid_type):
             print "INFO: (%s) is not a member of any existing array, so we will create a new array with it." % \
                 (potential_volume)
             new_vols.append(potential_volume)
-            
+
     # If we have more than 2 drives in existing_vols, assume thats correct
     if existing_vols.__len__() > 1:
         # Prep some variables
         vol_list = " ".join(existing_vols)
-        cmd = "cat /proc/mdstat  | grep ^md | awk  '{print \"/dev/\"$1}' | xargs --no-run-if-empty -n 1 mdadm -S; mdadm --assemble %s %s 2>&1" % (MD_VOL, vol_list)
+        cmd = "cat /proc/mdstat  | grep ^md | awk  '{print \"/dev/\"$1}' | xargs --no-run-if-empty -n 1 mdadm -S; mdadm --assemble %s %s 2>&1" % (
+            MD_VOL, vol_list)
         # Run the command and return the outpu
         if os.system(cmd) == 0:
             print "INFO: (%s) assembled from vols %s" % (MD_VOL, vol_list)
@@ -152,33 +159,37 @@ def create_raid_volume(vols,raid_type):
     os.system("cp " + md_conf + " " + md_conf + ".bak")
 
     # Now format our volume
-    if mount_raid_volume(MD_VOL,options.fstype,options.mountpoint) == False:
+    if False is mount_raid_volume(MD_VOL, options.fstype, options.mountpoint):
         print "ERROR: mount_raid_volume(%s, %s, %s) failed. exiting script." % \
             (MD_VOL, options.fstype, options.mountpoint)
         sys.exit(1)
 
     # Get our UUID from the mdadm array
-    md_uuid = commands.getoutput("blkid " + MD_VOL + " | awk '{print $2}'")
+    # md_uuid = commands.getoutput("blkid " + MD_VOL + " | awk '{print $2}'")
+    # flake8 reports this is dead code ^^
 
     # Grep out any old md configs form mdadm.conf
     os.system("cat " + md_conf + " | grep -v UUID > " + md_conf)
     os.system("cat " + md_conf + " | grep -v DEVICE > " + md_conf)
     os.system("mdadm --detail --scan >> " + md_conf)
     os.system("echo DEVICE " + vol_list + " >> " + md_conf)
-  
+
     # Return the created/mounted md vols
     return MD_VOL
 
 
-def mount_raid_volume(vol,fstype,mountpoint):
+def mount_raid_volume(vol, fstype, mountpoint):
     """ prep_raid_volume(vol,fstype) checks if a volume is formatted already or not.
     if not, it formats it with the fstype requested """
 
     # Check if 'vol' exists
-    if not stat.S_ISBLK(os.stat(vol).st_mode): return False
+    if not stat.S_ISBLK(os.stat(vol).st_mode):
+        return False
 
-    # Make sure that the mountpoint is available and nothing else is mounted there.
-    cmd = "mount | grep '" + mountpoint + "' | awk '{print $3}' | xargs --no-run-if-empty umount -f"
+    # Make sure that the mountpoint is available and nothing else is mounted
+    # there.
+    cmd = "mount | grep '" + mountpoint + \
+        "' | awk '{print $3}' | xargs --no-run-if-empty umount -f"
     os.system(cmd)
 
     # Sanity check our fstype. We may need to add options.
@@ -200,11 +211,12 @@ def mount_raid_volume(vol,fstype,mountpoint):
             return False
 
 
-def update_fstab(vol,fstype,mountpoint):
+def update_fstab(vol, fstype, mountpoint):
     """ Now that our mount point is finished, update fstab """
- 
+
     # Construct our fstab mount line
-    mnt_line = "%s	%s	%s	%s	0 0\n" % (vol, mountpoint, fstype, DEFAULT_MOUNTOPTS)
+    mnt_line = "%s	%s	%s	%s	0 0\n" % (
+        vol, mountpoint, fstype, DEFAULT_MOUNTOPTS)
 
     # Make sure that no existing mount line is in the fstab
     cmd = '/bin/sed -i \'\%s/d\' /etc/fstab' % mountpoint
@@ -230,10 +242,11 @@ if options.action == "instance":
 
 # Now that we have our volumes, and our mountpoint, lets create our raid volume
 raid_vol = create_raid_volume(vols, options.raidlevel)
-if raid_vol == False:
+if False is raid_vol:
     print "ERROR: create_raid_volume(%s, %s) failed. exiting script." % \
         (str(vols), str(options.raidlevel))
     sys.exit(1)
 
-# Once our volume is mounted, make sure that it gets remounted on subsequent bootups
+# Once our volume is mounted, make sure that it gets remounted on
+# subsequent bootups
 update_fstab(raid_vol, options.fstype, options.mountpoint)

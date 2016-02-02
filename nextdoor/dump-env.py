@@ -2,13 +2,11 @@
 
 # ---
 # RightScript Name: dump-env
-# Description: 
-# Packages: 
+# Description:
+# Packages:
 # ...
-# 
+#
 
-import sys
-sys.path.append('./lib/python')
-import utils
+from lib.python.utils import utils
 
 utils.dump_environment()

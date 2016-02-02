@@ -2,15 +2,14 @@
 
 # ---
 # RightScript Name: mounts
-# Description: 
-# Packages: 
+# Description:
+# Packages:
 # ...
-# 
+#
 
 import os
 from os import environ
 import sys
-from subprocess import call
 
 sys.path.append('./lib/python')
 from utils import detect_debug_mode, assert_command, validate_env, is_volumized, volumize
@@ -23,17 +22,22 @@ def install_dependencies():
 
     environ['DEBIAN_FRONTEND'] = 'noninteractive'
     environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
-    
+
     assert_command('apt-get update', 'Unable to update APT cache!')
-    assert_command('apt-get install -y ' + debs, 'Unable to install required .debs!')
-    assert_command('apt-get remove --purge -y ' + blacklist_debs, 'Unable to remove blacklisted .deb!')
-    assert_command('pip install ' + pip_packages, 'Unable to install a pip package!')
+    assert_command('apt-get install -y ' + debs,
+                   'Unable to install required .debs!')
+    assert_command('apt-get remove --purge -y ' + blacklist_debs,
+                   'Unable to remove blacklisted .deb!')
+    assert_command('pip install ' + pip_packages,
+                   'Unable to install a pip package!')
 
     return True
 
 #
 #
 #
+
+
 def ec2_mount():
     mount_command = "python ./lib/python/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
 
@@ -65,10 +69,12 @@ def ec2_mount():
 
     assert_command(mount_command, 'Unable to mount the cloud storage!') and \
         volumize()
-    
+
 #
 #
 #
+
+
 def google_mount():
     mount_command = "python ./lib/python/google_volume.py -a instance -m {} {} -f {}"
 
@@ -80,10 +86,12 @@ def google_mount():
 
     assert_command(mount_command, 'Unable to mount the cloud storage!') and \
         volumize()
-                   
+
 #
 #
 #
+
+
 def mount_volumes():
 
     if not is_volumized():
@@ -97,16 +105,16 @@ def mount_volumes():
                 'STORAGE_FSTYPE': '^(xfs|ext3|ext4)$'
         }.iteritems():
             validate_env(key, regex)
-            
+
         if 0 < os.environ['STORAGE_VOLCOUNT']:
             if 'ec2' == os.environ['RS_CLOUD_PROVIDER']:
                 ec2_mount()
             else:
                 google_mount()
-                
+
     else:
         print "   *** System is already Nextdoor volumized! ***   "
-            
+
 
 #
 #
