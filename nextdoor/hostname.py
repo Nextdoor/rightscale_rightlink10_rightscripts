@@ -7,13 +7,11 @@
 # ...
 #
 
-
 import sys
 import os
 import re
 
-sys.path.append('./lib/python')
-from utils import detect_debug_mode, assert_command, validate_env, normalize_hostname_to_rfc
+import lib.python.utils as utils
 
 
 #
@@ -21,7 +19,7 @@ from utils import detect_debug_mode, assert_command, validate_env, normalize_hos
 #
 def normalize_hostname(myservername, myinstanceid):
     myinstanceid = re.sub('[-]+', '', myinstanceid)
-    return re.sub('\.', '', normalize_hostname_to_rfc("{}-{}".format(myservername, myinstanceid)))
+    return re.sub('\.', '', utils.normalize_hostname_to_rfc("{}-{}".format(myservername, myinstanceid)))
 
 #
 #
@@ -34,7 +32,7 @@ def set_hostname_w_fqdn():
             'INSTANCE_ID': '^.+$',
             'DEFAULT_DOMAIN': '^.+\.nextdoor\.com'
     }.iteritems():
-        validate_env(key, regex)
+        utils.validate_env(key, regex)
 
     myhostname = normalize_hostname(
         os.environ['SERVER_NAME'],
@@ -44,18 +42,19 @@ def set_hostname_w_fqdn():
     mydomain = normalize_domain(os.environ['DEFAULT_DOMAIN'])
 
     # Because RightScale appears to eat stdout. :\
-#    assert_command("echo {}.{} > /etc/hostname".format(myhostname, mydomain), "Could not modify /etc/hostname!")
-    assert_command("augtool set /files/etc/hostname/hostname {}.{}".format(
+#    utils.assert_command("echo {}.{} > /etc/hostname".format(myhostname, mydomain), "Could not modify /etc/hostname!")
+    utils.assert_command("augtool set /files/etc/hostname/hostname {}.{}".format(
         myhostname, mydomain), "Could not modify /etc/hostname!")
-    assert_command("hostname -F /etc/hostname",
-                   "Failed when executing 'hostname' command!")
+    utils.assert_command("hostname -F /etc/hostname",
+                         "Failed when executing 'hostname' command!")
 
 
 #
 #
 #
 def normalize_domain(mydomain):
-    return normalize_hostname_to_rfc(mydomain)
+    return utils.normalize_hostname_to_rfc(mydomain)
+
 
 #
 #
@@ -63,8 +62,9 @@ def normalize_domain(mydomain):
 
 
 def install_dependencies():
-    assert_command('apt-get install -y augeas-tools',
-                   'Failed to install Augeas!')
+    utils.assert_command('apt-get install -y augeas-tools',
+                         'Failed to install Augeas!')
+
 
 #
 #
@@ -72,8 +72,8 @@ def install_dependencies():
 
 
 def main():
-    detect_debug_mode()
-    validate_env('RS_CLOUD_PROVIDER', '^(ec2|google)$')
+    utils.detect_debug_mode()
+    utils.validate_env('RS_CLOUD_PROVIDER', '^(ec2|google)$')
     if not 'ec2' == os.environ['RS_CLOUD_PROVIDER']:
         sys.exit("RS_CLOUD_PROVIDER=\'{}\' not supported!".format(
             os.environ['RS_CLOUD_PROVIDER']))

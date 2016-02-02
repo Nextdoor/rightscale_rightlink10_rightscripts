@@ -217,7 +217,7 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
             time.sleep(1)
             vol.update()
         while not str(vol.attach_data.instance_id) == instanceid \
-                or not os.path.exists(dest) == True:
+                or True is not os.path.exists(dest):
             print "INFO: (%s) Volume attaching..." % (vol.id)
             time.sleep(1)
             vol.update()
@@ -302,7 +302,7 @@ def find_ebs_volumes(awskey, awssecret, ebs_vol_list, ebs_volid_list):
                 time.sleep(1)
                 vol.update()
             while not str(vol.attach_data.instance_id) == instanceid \
-                    or not os.path.exists(dest) == True:
+                    or True is not os.path.exists(dest):
                 print "INFO: (%s) Volume attaching..." % (vol.id)
                 time.sleep(1)
                 vol.update()
@@ -400,7 +400,7 @@ def create_raid_volume(vols, raid_type):
     os.system("cp " + md_conf + " " + md_conf + ".bak")
 
     # Now format our volume
-    if mount_raid_volume(MD_VOL, options.fstype, options.mountpoint) == False:
+    if False is mount_raid_volume(MD_VOL, options.fstype, options.mountpoint):
         print "ERROR: mount_raid_volume(%s, %s, %s) failed. exiting script." % \
             (MD_VOL, options.fstype, options.mountpoint)
         sys.exit(1)
@@ -514,7 +514,7 @@ elif options.action == "remount-ebs":
 
 # Now that we have our volumes, and our mountpoint, lets create our raid volume
 raid_vol = create_raid_volume(vols, options.raidlevel)
-if raid_vol == False:
+if False is raid_vol:
     print "ERROR: create_raid_volume(%s, %s) failed. exiting script." % \
         (str(vols), str(options.raidlevel))
     sys.exit(1)

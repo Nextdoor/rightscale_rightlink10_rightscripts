@@ -159,7 +159,7 @@ def create_raid_volume(vols, raid_type):
     os.system("cp " + md_conf + " " + md_conf + ".bak")
 
     # Now format our volume
-    if mount_raid_volume(MD_VOL, options.fstype, options.mountpoint) == False:
+    if False is mount_raid_volume(MD_VOL, options.fstype, options.mountpoint):
         print "ERROR: mount_raid_volume(%s, %s, %s) failed. exiting script." % \
             (MD_VOL, options.fstype, options.mountpoint)
         sys.exit(1)
@@ -242,7 +242,7 @@ if options.action == "instance":
 
 # Now that we have our volumes, and our mountpoint, lets create our raid volume
 raid_vol = create_raid_volume(vols, options.raidlevel)
-if raid_vol == False:
+if False is raid_vol:
     print "ERROR: create_raid_volume(%s, %s) failed. exiting script." % \
         (str(vols), str(options.raidlevel))
     sys.exit(1)

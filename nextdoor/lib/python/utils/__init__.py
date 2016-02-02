@@ -107,12 +107,12 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
 #
 #
 def validate_env(envvar, regex):
-    if not envvar in environ:
+    if envvar not in environ:
         msg = "   *** \'{0}\' not found in environment!  ***".format(envvar)
         log_and_stdout(msg)
         sys.exit(-1)
 
-    if None == re.match(regex, os.environ[envvar]):
+    if None is re.match(regex, os.environ[envvar]):
         msg = "   *** \'{0}\'=\'{1}\' does not match RE \'{2}\'! ***".format(
             envvar, os.environ[envvar], regex)
         log_and_stdout(msg)

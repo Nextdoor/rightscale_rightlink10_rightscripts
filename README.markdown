@@ -9,6 +9,7 @@ Various Boot and Operational scripts for use with RightScale RightLink10.
 * Ruby (rbenv suggested)
 * Rake
 * Bundler
+* gem 'colorize'
 
 ## Install and Usage
 
