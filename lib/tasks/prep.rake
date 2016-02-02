@@ -17,12 +17,6 @@ task :prep do
     abort "Exit status: #{$?.exitstatus}".red
   end
 
-  puts "Upgrading to reasonably modern version of pip..".green
-  unless system("pip install --upgrade pip")
-    abort("Failed while installing a reasonably modern version of pip!".red + \
-          "Exit code: #{$?.exitstatus}".red)
-  end
-  
   puts "Executing 'pip install -r requirements.txt'...".green
   unless system('pip install -r requirements.txt')
     puts "Exit status: #{$?.exitstatus}".red
