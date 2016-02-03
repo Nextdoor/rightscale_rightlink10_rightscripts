@@ -100,7 +100,7 @@ def get_ephemeral_volumes(instance_vol_list):
     # Now, for every potential volume listed in the config, walk through it..
     for potential_volume in instance_vol_list:
         # Check if the volume exists...
-        print("INFO: (%s) checking if ephemeral vol is available..." %
+        print("INFO: ({}) checking if ephemeral vol is available..." %
               (potential_volume))
         if not os.path.exists(potential_volume):
             continue
@@ -115,7 +115,7 @@ def get_ephemeral_volumes(instance_vol_list):
 
         # We got through our checks... add this item to our array of valid
         # drives to use
-        print("INFO: (%s) is available, adding it to our list..." %
+        print("INFO: ({}) is available, adding it to our list..." %
               (potential_volume))
         valid_volumes.append(potential_volume)
 
@@ -183,7 +183,7 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
 
     # For each volume..
     for i in range(0, volcount):
-        print("INFO: Requesting EBS volume creation (%s gb)...".format(
+        print("INFO: Requesting EBS volume creation ({} gb)...".format(
             individual_vol_size))
 
         # 30:1 GB:IOP ratio, with a max of 4000
@@ -212,7 +212,8 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
         dest = available_ebs_vol_list.pop()
 
         # Attach the volume and wait for it to fully attach
-        print("INFO: ({}) Attaching EBS volume to our instance ID ({}) to {}".format(vol.id, instanceid, dest))
+        print("INFO: ({}) Attaching EBS volume to our instance ID ({}) to {}".format(
+            vol.id, instanceid, dest))
         try:
             vol.attach(instanceid, dest.replace('xvd', 'sd'))
         except:
@@ -224,7 +225,7 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
             vol.update()
         while not str(vol.attach_data.instance_id) == instanceid \
                 or True is not os.path.exists(dest):
-            print "INFO: (%s) Volume attaching..." % (vol.id)
+            print("INFO: (%{}) Volume attaching...").format(vol.id)
             time.sleep(1)
             vol.update()
 
@@ -233,12 +234,12 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
 
         # Add the volume to our list of volumes that were created
         attached_ebs_vol_list.append(dest)
-        print "INFO: (%s) Volume attached!" % (vol.id)
+        print("INFO: ({}) Volume attached!".format(vol.id))
 
         # Now, tag the volumes and move on
         tags = {}
-        tags["Name"] = "%s:%s" % (socket.gethostname(), dest)
-        print "INFO: (%s) Taggin EBS volume with these tags: %s" % (vol.id, tags)
+        tags["Name"] = "{}:{}".format((socket.gethostname(), dest))
+        print("INFO: ({}) Taggin EBS volume with these tags: {}".format(vol.id, tags))
         ec2.create_tags(str(vol.id), tags)
 
     # All done. Return whatever volumes were created and attached.
@@ -262,7 +263,8 @@ def find_ebs_volumes(awskey, awssecret, ebs_vol_list, ebs_volid_list):
     # remove it from the potential 'device targets'
     for potential_volume in ebs_vol_list:
         if not os.path.exists(potential_volume):
-            print "INFO: (%s) is available as a disk target." % (potential_volume)
+            print("INFO: ({}) is available as a disk target.".format(
+                potential_volume))
             available_ebs_vol_list.append(potential_volume)
 
     # Reverse our available_ebs_vol_list so that we can 'pop' from the
@@ -271,11 +273,11 @@ def find_ebs_volumes(awskey, awssecret, ebs_vol_list, ebs_volid_list):
 
     # Make sure we have enough target devices available
     if available_ebs_vol_list <= ebs_volid_list.__len__():
-        print "ERROR: Do not have enough local volume targets available to attach the drives. Erroring out."
+        print("ERROR: Do not have enough local volume targets available to attach the drives. Erroring out.")
         return False
 
     # Open our EC2 connection
-    print "INFO: Connecting to Amazon..."
+    print("INFO: Connecting to Amazon...")
     ec2 = boto.connect_ec2(aws_access_key_id=awskey,
                            aws_secret_access_key=awssecret)
     ec2 = boto.ec2.connect_to_region(
@@ -283,33 +285,36 @@ def find_ebs_volumes(awskey, awssecret, ebs_vol_list, ebs_volid_list):
 
     # For each volume..
     for ebs_volid in ebs_volid_list:
-        print "INFO: (%s) Searching for EBS volume..." % (ebs_volid)
+        print("INFO: ({}) Searching for EBS volume...".format(ebs_volid))
         vols = ec2.get_all_volumes(volume_ids=ebs_volid)
         vol = vols[0]
 
         # Check if the volume is attached. If it is, bail!
         if not str(vol.attach_data.status) == "None" \
                 and not str(vol.attach_data.instance_id) == instanceid:
-            print "ERROR: (%s) is attached to instance ID %s already. Exiting!" % (vol.id, vol.attach_data.instance_id)
+            print("ERROR: ({}) is attached to instance ID {} already. Exiting!".format(
+                vol.id, vol.attach_data.instance_id))
             return False
         # If its attached, but to our host already then figure out
         # what device its attached to.
         elif not str(vol.attach_data.status) == "None" \
                 and str(vol.attach_data.instance_id) == instanceid:
-            print "WARNING: (%s) is already attached our instance ID at %s. Using that..." % (vol.id, vol.attach_data.device)
+            print("WARNING: ({}) is already attached our instance ID at {}. Using that...".format(
+                vol.id, vol.attach_data.device))
             dest = vol.attach_data.device
         else:
             # Grab a volume off of our stack of available vols..
             dest = available_ebs_vol_list.pop()
             # Attach the volume and wait for it to fully attach
-            print "INFO: (%s) Attaching EBS volume to our instance ID (%s) to %s" % (vol.id, instanceid, dest)
+            print("INFO: ({}) Attaching EBS volume to our instance ID ({}) to {}".format(
+                vol.id, instanceid, dest))
             vol.attach(instanceid, dest.replace('xvd', 'sd'))
             while not hasattr(vol.attach_data, 'instance_id'):
                 time.sleep(1)
                 vol.update()
             while not str(vol.attach_data.instance_id) == instanceid \
                     or True is not os.path.exists(dest):
-                print "INFO: (%s) Volume attaching..." % (vol.id)
+                print("INFO: ({}) Volume attaching...".format(vol.id))
                 time.sleep(1)
                 vol.update()
             # Sleep a few more seconds just to make sure the OS has seen the
@@ -320,16 +325,16 @@ def find_ebs_volumes(awskey, awssecret, ebs_vol_list, ebs_volid_list):
         # point as '/dev/sdXXX' when sometimes its actually '/dev/xvdXXX'.
         if os.path.exists("/dev/xvda1"):
             dest = dest.replace('sd', 'xvd')
-            print "INFO: (%s) Converting volume mount point to %s" % (vol.id, dest)
+            print("INFO: ({}) Converting volume mount point to {}".format(vol.id, dest))
 
         # Add the volume to our list of volumes that were created
         attached_ebs_vol_list.append(dest)
-        print "INFO: (%s) Volume attached!" % (vol.id)
+        print("INFO: ({}) Volume attached!".format(vol.id))
 
         # Now, tag the volumes and move on
         tags = {}
-        tags["Name"] = "%s-%s" % (socket.gethostname(), dest)
-        print "INFO: (%s) Taggin EBS volume with these tags: %s" % (vol.id, tags)
+        tags["Name"] = "{}-{}".format((socket.gethostname(), dest))
+        print("INFO: ({}) Taggin EBS volume with these tags: {}".format(vol.id, tags))
         ec2.create_tags(str(vol.id), tags)
 
     # All done. Return whatever volumes were created and attached.
@@ -348,10 +353,12 @@ def create_raid_volume(vols, raid_type):
     if os.system("mdadm -D " + MD_VOL + " 2>&1") == 0:
         vol_list = '|'.join(vols)
         if os.system("mdadm -D " + MD_VOL + " 2>&1 | egrep '" + vol_list + "' 2>&1") == 0:
-            print "WARNING: " + MD_VOL + " already exists and actually has our volumes in it, using that and passing it back."
+            print("WARNING: " + MD_VOL +
+                  " already exists and actually has our volumes in it, using that and passing it back.")
             return MD_VOL
         else:
-            print "ERROR: " + MD_VOL + " alredy exists, but does NOT have our existing volumes in it. Exiting badly."
+            print("ERROR: " + MD_VOL +
+                  " alredy exists, but does NOT have our existing volumes in it. Exiting badly.")
             sys.exit(1)
 
     # Now, walk throu each of the volumes passed to us and figure out if they
@@ -360,38 +367,40 @@ def create_raid_volume(vols, raid_type):
     new_vols = []
     for potential_volume in vols:
         if os.system("mdadm --examine " + potential_volume + " 2>&1") == 0:
-            print "INFO: (%s) is already a member of an existing array... not overwriting." % \
-                (potential_volume)
+            print("INFO: ({}) is already a member of an existing array... not overwriting.".format(
+                (potential_volume)))
             existing_vols.append(potential_volume)
         else:
-            print "INFO: (%s) is not a member of any existing array, so we will create a new array with it." % \
-                (potential_volume)
+            print("INFO: ({}) is not a member of any existing array, so we will create a new array with it.".format(
+                (potential_volume)))
             new_vols.append(potential_volume)
 
     # If we have more than 2 drives in existing_vols, assume thats correct
     if existing_vols.__len__() > 0:
         # Prep some variables
         vol_list = " ".join(existing_vols)
-        cmd = "cat /proc/mdstat  | grep ^md | awk  '{print \"/dev/\"$1}' | xargs --no-run-if-empty -n 1 mdadm -S; mdadm --assemble %s %s 2>&1" % (
-            MD_VOL, vol_list)
+        cmd = "cat /proc/mdstat  | grep ^md | awk  '{print \"/dev/\"$1}' | xargs --no-run-if-empty -n 1 mdadm -S; mdadm --assemble {} {} 2>&1".format((
+            MD_VOL, vol_list))
         # Run the command and return the outpu
         if os.system(cmd) == 0:
-            print "INFO: (%s) assembled from vols %s" % (MD_VOL, vol_list)
+            print("INFO: ({}) assembled from vols {}".format((MD_VOL, vol_list)))
         else:
-            print "ERROR: (%s) failed. (%s) could not be created... skipping." % (cmd, MD_VOL)
+            print("ERROR: ({}) failed. ({}) could not be created... skipping.".format(
+                (cmd, MD_VOL)))
             return False
     # If we have more than 2 drives in existing_vols, assume thats correct
     elif new_vols.__len__() > 0:
         # Prep some variables
         vol_list = " ".join(new_vols)
-        cmd = "yes | mdadm --create --name=0 --force %s --level %s --raid-devices=%s %s 2>&1" %\
+        cmd = "yes | mdadm --create --name=0 --force {} --level {} --raid-devices={} {} 2>&1" %\
             (MD_VOL, str(raid_type), new_vols.__len__(), vol_list)
 
         # Run the command and return the outpu
         if os.system(cmd) == 0:
-            print "INFO: %s created with vols %s" % (MD_VOL, vol_list)
+            print("INFO: {} created with vols {}".format((MD_VOL, vol_list)))
         else:
-            print "ERROR: (%s) failed. %s could not be created... skipping." % (cmd, MD_VOL)
+            print("ERROR: ({}) failed. {} could not be created... skipping.".format(
+                (cmd, MD_VOL)))
             return False
     else:
         return False
@@ -407,8 +416,8 @@ def create_raid_volume(vols, raid_type):
 
     # Now format our volume
     if False is mount_raid_volume(MD_VOL, options.fstype, options.mountpoint):
-        print "ERROR: mount_raid_volume(%s, %s, %s) failed. exiting script." % \
-            (MD_VOL, options.fstype, options.mountpoint)
+        print("ERROR: mount_raid_volume({}, {}, {}) failed. exiting script.".format(
+            (MD_VOL, options.fstype, options.mountpoint)))
         sys.exit(1)
 
     # Get our UUID from the mdadm array
@@ -448,14 +457,14 @@ def mount_raid_volume(vol, fstype, mountpoint):
     cmd = "(fsck -y {} 2>&1 ; mount {} {} -o {} 2>&1)".format(
         vol, vol, mountpoint, DEFAULT_MOUNTOPTS)
     if options.verbose:
-        print "INFO: {}".format(cmd)
+        print("INFO: {}".format(cmd))
     if 0 == os.system(cmd):
-        print "INFO: (%s) already has a filesystem on it... mounting." % (vol)
+        print("INFO: ({}) already has a filesystem on it... mounting.".format((vol)))
         return True
     else:
         # If theres no filesystem on the device, create the one we want
-        print "INFO: Formatting %s with %s and mounting it to %s..." % \
-            (vol, fstype, mountpoint)
+        print("INFO: Formatting {} with {} and mounting it to {}...".format(
+            (vol, fstype, mountpoint)))
         if os.system("mkfs." + fstype + " " + vol + " 2>&1; mount " + vol + " " + mountpoint + " -o " + DEFAULT_MOUNTOPTS + " 2>&1") == 0:
             return True
         else:
@@ -466,11 +475,11 @@ def update_fstab(vol, fstype, mountpoint):
     """ Now that our mount point is finished, update fstab """
 
     # Construct our fstab mount line
-    mnt_line = "%s	%s	%s	%s	0 0\n" % (
+    mnt_line = "{}	{}	{}	{}	0 0\n".format(
         vol, mountpoint, fstype, DEFAULT_MOUNTOPTS)
 
     # Make sure that no existing mount line is in the fstab
-    cmd = '/bin/sed -i \'\%s/d\' /etc/fstab' % mountpoint
+    cmd = '/bin/sed -i \'\{}/d\' /etc/fstab'.format(mountpoint)
     os.system(cmd)
 
     # Now add our line to the fstab
@@ -521,8 +530,8 @@ elif options.action == "remount-ebs":
 # Now that we have our volumes, and our mountpoint, lets create our raid volume
 raid_vol = create_raid_volume(vols, options.raidlevel)
 if False is raid_vol:
-    print "ERROR: create_raid_volume(%s, %s) failed. exiting script." % \
-        (str(vols), str(options.raidlevel))
+    print("ERROR: create_raid_volume({}, {}) failed. exiting script.".format(
+        (str(vols), str(options.raidlevel))))
     sys.exit(1)
 
 # Once our volume is mounted, make sure that it gets remounted on

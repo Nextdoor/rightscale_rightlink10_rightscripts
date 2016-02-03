@@ -47,7 +47,7 @@ def lint_fix():
 
     python_files = find_files('*.py')
     cmd = """
-autopep8 --in-place --ignore={} {}
+autopep8 -r --in-place --ignore={} {}
 """.format(PEP8_IGNORE, ' '.join(python_files))
     result = run(cmd, echo=True)
 
