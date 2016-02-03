@@ -192,7 +192,7 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
             iops = 4000
 
         if volume_type == 'io1':
-            print "INFO: Requesting %s provisioned IOPS..." % iops
+            print("INFO: Requesting {} provisioned IOPS...".format(iops))
             vol = ec2.create_volume(individual_vol_size, zone,
                                     volume_type=volume_type,
                                     iops=iops)
@@ -203,16 +203,16 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
         # Wait until the volume is 'available' before attaching
         while vol.status != u'available':
             time.sleep(1)
-            print "INFO: Waiting for %s to become available..." % vol
+            print("INFO: Waiting for {} to become available...".format(vol))
             vol.update()
 
-        print "INFO: Volume %s status is now: %s..." % (vol, vol.status)
+        print("INFO: Volume {} status is now: {}...".format(vol, vol.status))
 
         # Grab a volume off of our stack of available vols..
         dest = available_ebs_vol_list.pop()
 
         # Attach the volume and wait for it to fully attach
-        print "INFO: (%s) Attaching EBS volume to our instance ID (%s) to %s" % (vol.id, instanceid, dest)
+        print("INFO: ({}) Attaching EBS volume to our instance ID ({}) to {}".format(vol.id, instanceid, dest))
         try:
             vol.attach(instanceid, dest.replace('xvd', 'sd'))
         except:
