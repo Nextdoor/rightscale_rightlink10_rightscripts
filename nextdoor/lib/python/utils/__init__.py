@@ -61,7 +61,7 @@ def is_volumized():
 #
 def log_and_stdout(msg):
     logger.info(msg)
-    print msg
+    print(msg)
 
 #
 #
@@ -84,7 +84,7 @@ def assert_command(cmd, msg, shell=False, cwd=None, retries=1):
             output = check_output(
                 cmd.split(), stderr=STDOUT, shell=shell, cwd=cwd)
 
-        except CalledProcessError, e:
+        except CalledProcessError as e:
             ret = e.returncode
             output = e.output
 

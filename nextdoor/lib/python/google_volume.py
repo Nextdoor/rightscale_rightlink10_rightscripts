@@ -62,7 +62,8 @@ def get_ephemeral_volumes(instance_vol_list):
     # Now, for every potential volume listed in the config, walk through it..
     for potential_volume in instance_vol_list:
         # Check if the volume exists...
-        print "INFO: (%s) checking if ephemeral vol is available..." % (potential_volume)
+        print("INFO: ({}) checking if ephemeral vol is available...".format(
+              (potential_volume)))
         if not os.path.exists(potential_volume):
             continue
         if not stat.S_ISBLK(os.stat(potential_volume).st_mode):
@@ -76,13 +77,14 @@ def get_ephemeral_volumes(instance_vol_list):
 
         # We got through our checks... add this item to our array of valid
         # drives to use
-        print "INFO: (%s) is available, adding it to our list..." % (potential_volume)
+        print("INFO: ({}) is available, adding it to our list...".format(
+              (potential_volume)))
         valid_volumes.append(potential_volume)
 
     # If we have less than two drives available, exit quietly.
     if valid_volumes.__len__() < 2:
         os.system("mount -a")
-        print "INFO: Less than 2 volumes found -- exiting quietly."
+        print("INFO: Less than 2 volumes found -- exiting quietly.")
         sys.exit(0)
 
     # Return our valid volumes
@@ -101,10 +103,12 @@ def create_raid_volume(vols, raid_type):
     if os.system("mdadm -D " + MD_VOL + " 2>&1") == 0:
         vol_list = '|'.join(vols)
         if os.system("mdadm -D " + MD_VOL + " 2>&1 | egrep '" + vol_list + "' 2>&1") == 0:
-            print "WARNING: " + MD_VOL + " already exists and actually has our volumes in it, using that and passing it back."
+            print("WARNING: " + MD_VOL +
+                  " already exists and actually has our volumes in it, using that and passing it back.")
             return MD_VOL
         else:
-            print "ERROR: " + MD_VOL + " alredy exists, but does NOT have our existing volumes in it. Exiting badly."
+            print("ERROR: " + MD_VOL +
+                  " alredy exists, but does NOT have our existing volumes in it. Exiting badly.")
             sys.exit(1)
 
     # Now, walk throu each of the volumes passed to us and figure out if they
@@ -113,38 +117,40 @@ def create_raid_volume(vols, raid_type):
     new_vols = []
     for potential_volume in vols:
         if os.system("mdadm --examine " + potential_volume + " 2>&1") == 0:
-            print "INFO: (%s) is already a member of an existing array... not overwriting." % \
-                (potential_volume)
+            print("INFO: ({}) is already a member of an existing array... not overwriting.".format(
+                (potential_volume)))
             existing_vols.append(potential_volume)
         else:
-            print "INFO: (%s) is not a member of any existing array, so we will create a new array with it." % \
-                (potential_volume)
+            print("INFO: ({}) is not a member of any existing array, so we will create a new array with it.".format(
+                (potential_volume)))
             new_vols.append(potential_volume)
 
     # If we have more than 2 drives in existing_vols, assume thats correct
     if existing_vols.__len__() > 1:
         # Prep some variables
         vol_list = " ".join(existing_vols)
-        cmd = "cat /proc/mdstat  | grep ^md | awk  '{print \"/dev/\"$1}' | xargs --no-run-if-empty -n 1 mdadm -S; mdadm --assemble %s %s 2>&1" % (
-            MD_VOL, vol_list)
+        cmd = "cat /proc/mdstat  | grep ^md | awk  '{print \"/dev/\"$1}' | xargs --no-run-if-empty -n 1 mdadm -S; mdadm --assemble {} {} 2>&1".format((
+            MD_VOL, vol_list))
         # Run the command and return the outpu
         if os.system(cmd) == 0:
-            print "INFO: (%s) assembled from vols %s" % (MD_VOL, vol_list)
+            print("INFO: ({}) assembled from vols {}".format((MD_VOL, vol_list)))
         else:
-            print "ERROR: (%s) failed. (%s) could not be created... skipping." % (cmd, MD_VOL)
+            print("ERROR: ({}) failed. ({}) could not be created... skipping.".format(
+                (cmd, MD_VOL)))
             return False
     # If we have more than 2 drives in existing_vols, assume thats correct
     elif new_vols.__len__() > 1:
         # Prep some variables
         vol_list = " ".join(new_vols)
-        cmd = "yes | mdadm --create --name=0 --force %s --level %s --raid-devices=%s %s 2>&1" %\
-            (MD_VOL, str(raid_type), new_vols.__len__(), vol_list)
+        cmd = "yes | mdadm --create --name=0 --force {} --level {} --raid-devices={} {} 2>&1".format(
+            (MD_VOL, str(raid_type), new_vols.__len__(), vol_list))
 
         # Run the command and return the outpu
         if os.system(cmd) == 0:
-            print "INFO: %s created with vols %s" % (MD_VOL, vol_list)
+            print("INFO: {} created with vols {}".format((MD_VOL, vol_list)))
         else:
-            print "ERROR: (%s) failed. %s could not be created... skipping." % (cmd, MD_VOL)
+            print("ERROR: ({}) failed. {} could not be created... skipping.".format(
+                (cmd, MD_VOL)))
             return False
     else:
         return False
@@ -160,8 +166,8 @@ def create_raid_volume(vols, raid_type):
 
     # Now format our volume
     if False is mount_raid_volume(MD_VOL, options.fstype, options.mountpoint):
-        print "ERROR: mount_raid_volume(%s, %s, %s) failed. exiting script." % \
-            (MD_VOL, options.fstype, options.mountpoint)
+        print("ERROR: mount_raid_volume({}, {}, {}) failed. exiting script.".format(
+            (MD_VOL, options.fstype, options.mountpoint)))
         sys.exit(1)
 
     # Get our UUID from the mdadm array
@@ -199,12 +205,12 @@ def mount_raid_volume(vol, fstype, mountpoint):
     # Attempt to mount the filesystem... if it wont mount, then
     # assume its bad and try to format it.
     if os.system("fsck -y" + vol + " 2>&1; mount " + vol + " " + mountpoint + " -o " + DEFAULT_MOUNTOPTS + " 2>&1") == 0:
-        print "INFO: (%s) already has a filesystem on it... mounting." % (vol)
+        print("INFO: ({}) already has a filesystem on it... mounting.".format((vol)))
         return True
     else:
         # If theres no filesystem on the device, create the one we want
-        print "INFO: Formatting %s with %s and mounting it to %s..." % \
-            (vol, fstype, mountpoint)
+        print("INFO: Formatting {} with {} and mounting it to {}...".format(
+            (vol, fstype, mountpoint)))
         if os.system("mkfs." + fstype + " " + vol + " 2>&1; mount " + vol + " " + mountpoint + " -o " + DEFAULT_MOUNTOPTS + " 2>&1") == 0:
             return True
         else:
@@ -215,11 +221,11 @@ def update_fstab(vol, fstype, mountpoint):
     """ Now that our mount point is finished, update fstab """
 
     # Construct our fstab mount line
-    mnt_line = "%s	%s	%s	%s	0 0\n" % (
+    mnt_line = "{}	{}	{}	{}	0 0\n".format(
         vol, mountpoint, fstype, DEFAULT_MOUNTOPTS)
 
     # Make sure that no existing mount line is in the fstab
-    cmd = '/bin/sed -i \'\%s/d\' /etc/fstab' % mountpoint
+    cmd = '/bin/sed -i \'\{}/d\' /etc/fstab'.format(mountpoint)
     os.system(cmd)
 
     # Now add our line to the fstab
@@ -243,8 +249,8 @@ if options.action == "instance":
 # Now that we have our volumes, and our mountpoint, lets create our raid volume
 raid_vol = create_raid_volume(vols, options.raidlevel)
 if False is raid_vol:
-    print "ERROR: create_raid_volume(%s, %s) failed. exiting script." % \
-        (str(vols), str(options.raidlevel))
+    print("ERROR: create_raid_volume({}, {}) failed. exiting script.".format(
+        (str(vols), str(options.raidlevel))))
     sys.exit(1)
 
 # Once our volume is mounted, make sure that it gets remounted on

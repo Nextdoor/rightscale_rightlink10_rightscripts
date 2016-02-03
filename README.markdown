@@ -6,26 +6,8 @@ Various Boot and Operational scripts for use with RightScale RightLink10.
 
 ## Requirements
 
-* Ruby (rbenv suggested)
-* Rake
-* Bundler
-* gem 'colorize'
+* FIXME 
 
 ## Install and Usage
 
-To setup the environment, including not only the Ruby deps but also the
-Python deps:
-
-```ShellSession
-$ bundle exec rake prep
-```
-
-Additional Rake tasks are available:
-
-```ShellSession
-$ bundle exec rake -T
-rake lint    # Lint All The Things!
-rake prep    # Install supporting tooling for syntax|lint|etc checks
-rake syntax  # Check All The Syntax!
-rake test    # Test All The Things!
-```
+* FIXME
