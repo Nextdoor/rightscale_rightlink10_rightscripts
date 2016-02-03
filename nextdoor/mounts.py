@@ -3,8 +3,19 @@
 # ---
 # RightScript Name: mounts
 # Description:
-# Packages:
-# ...
+# Parameters:
+#   - RS_CLOUD_PROVIDER
+#   - STORAGE_RAID_LEVEL
+#   - STORAGE_FSTYPE
+#   - STORAGE_VOLCOUNT
+#   - AWS_ACCESS_KEY_ID
+#   - AWS_SECRET_ACCESS_KEY
+#   - STORAGE_TYPE
+#   - EBS_TYPE
+#   - STORAGE_VOLIDLIST
+#   - STORAGE_SIZE
+#   - STORAGE_MOUNTPOINT
+#   - DEBUG
 #
 
 import os
@@ -16,6 +27,9 @@ from utils import detect_debug_mode, assert_command, validate_env, is_volumized,
 
 
 def install_dependencies():
+    """
+    Instal some utilities we are goig to need to bootstrap Pupppet.
+    """
     debs = 'python-pip xfsprogs'
     blacklist_debs = 'python-boto'
     pip_packages = 'boto'
@@ -33,12 +47,11 @@ def install_dependencies():
 
     return True
 
-#
-#
-#
-
 
 def ec2_mount():
+    """
+    Perform a mount of the EBS volumes.
+    """
     mount_command = "python ./lib/python/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
 
     for key, regex in {
@@ -70,12 +83,11 @@ def ec2_mount():
     assert_command(mount_command, 'Unable to mount the cloud storage!') and \
         volumize()
 
-#
-#
-#
-
 
 def google_mount():
+    """
+    Mount a Google volume.
+    """
     mount_command = "python ./lib/python/google_volume.py -a instance -m {} {} -f {}"
 
     mount_command = mount_command.format(
@@ -87,12 +99,11 @@ def google_mount():
     assert_command(mount_command, 'Unable to mount the cloud storage!') and \
         volumize()
 
-#
-#
-#
-
-
+    
 def mount_volumes():
+    """
+    Mount all configured storage volumes.
+    """
 
     if not is_volumized():
 
@@ -116,16 +127,13 @@ def mount_volumes():
         print("   *** System is already Nextdoor volumized! ***   ")
 
 
-#
-#
-#
 def main():
+    """
+    The Fun Starts Here.
+    """
     detect_debug_mode()
     install_dependencies()
     mount_volumes()
 
-#
-#
-#
 if "__main__" == __name__:
     main()

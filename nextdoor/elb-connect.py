@@ -2,9 +2,14 @@
 
 # ---
 # RightScript Name: nextdoor::elb-connect
-# Description:
-# Packages:
-# ...
+# Description: Connect the instance to specified ELB.
+# Parameters:
+#   - AWS_ACCESS_KEY_ID
+#   - AWS_SECRET_ACCESS_KEY
+#   - INSTANCE_ID
+#   - ELB_NAME
+#   - EC2_INSTANCE_ID
+#   - EC2_PLACEMENT_AVAILABILITY_ZONE
 #
 
 from os import environ

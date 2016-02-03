@@ -3,8 +3,10 @@
 # ---
 # RightScript Name: dump-env
 # Description:
-# Packages:
-# ...
+#   Dump the shell environment for debugging purposes iff the shell environment
+#   has 'DEBUG' set to any value.
+# Parameters:
+#   - DEBUG
 #
 
 from lib.python.utils import utils

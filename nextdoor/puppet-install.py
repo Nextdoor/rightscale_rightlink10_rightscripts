@@ -3,8 +3,19 @@
 # ---
 # RightScript Name: nextdoor::puppet-install
 # Description:
-# Packages:
-# ...
+# Parameters:
+#   - DEBUG
+#   - PUPPET_AGENT_VERSION
+#   - PUPPET_CUSTOM_FACTS
+#   - PUPPET_NODE
+#   - PUPPET_NODE_NAME
+#   - PUPPET_ENABLE_REPORTS
+#   - PUPPET_NODE_NAME_FACT
+#   - PUPPET_CHALLENGE_PASSWORD
+#   - PUPPET_CA_SERVER
+#   - PUPPET_SERVER_HOSTNAME
+#   - PUPPET_ENVIRONMENT_NAME
+#   - 
 #
 
 import os
@@ -19,10 +30,10 @@ from utils import detect_debug_mode, assert_command, validate_env, mkdir_p, norm
 from utils import log_and_stdout
 
 
-#
-#
-#
 def install_dependencies():
+    """
+    Install some tooling which may be needed to bootstrap Puppet.
+    """
     debs = 'wget'
     blacklist_debs = 'puppet'
 
@@ -36,10 +47,10 @@ def install_dependencies():
                    'Unable to uninstall blacklisted .debs!')
 
 
-#
-#
-#
 def configure_puppet_external_facts():
+    """
+    Create Nextdoor Facts as External Facts.
+    """
 
     if 'PUPPET_CUSTOM_FACTS' in environ:
         # take the envvar apart and reconstitute as dict
@@ -61,16 +72,15 @@ def configure_puppet_external_facts():
                                                            e.filename, e.strerror))
 
 
-#
-#
-#
 def resolve_puppet_node_name():
+    """
+    Resolve the Puppet node name from either specified value or Puppet Fact.
+    """
 
     validate_env('PUPPET_NODE_NAME', '^(facter|cert)$')
     validate_env('PUPPET_NODE_NAME_FACT', '^.+$')
     puppet_node_name = environ['PUPPET_NODE_NAME']
-#        puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
-# flake8 says this is dead code ^^
+    puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
     puppet_node = ''
 
     # if we want the node name to come from PUPPET_NODE value...
@@ -84,10 +94,10 @@ def resolve_puppet_node_name():
     return puppet_node
 
 
-#
-#
-#
 def bootstrap_puppet_config():
+    """
+    Adjust various settings in puppet.conf
+    """
     dmc = '^.+$'
 
     for key, regex in {
@@ -116,10 +126,10 @@ def bootstrap_puppet_config():
                        'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
 
 
-#
-#
-#
 def install_puppet_agent():
+    """
+    Install the Puppet agent repo and packages.
+    """
 
     validate_env('PUPPET_AGENT_VERSION', '^([\w\.\-]+|PC\d+)$')
     puppet_version = environ['PUPPET_AGENT_VERSION'].lower()
@@ -135,10 +145,12 @@ def install_puppet_agent():
         puppet_version, puppet_version), 'Failed to install Puppet!')
 
 
-#
-#
-#
 def puppet_bootstrapped():
+    """
+    Predicate to detect if Puppet has already been installed.
+
+    Returns: boolean True or False
+    """
     classification_data = '/var/lib/puppet/state/catalog.txt'
 
     # classes.txt only gets dropped on a successful Puppet run.
@@ -148,10 +160,10 @@ def puppet_bootstrapped():
         return False
 
 
-#
-#
-#
 def create_rightscale_puppet_tags(secret):
+    """
+    Create the RightScale tags used for Puppet master auto-signing.
+    """
     validate_env('RS_SELF_HREF', '^.+$')
 
     for tag in ['nd:puppet_state=waiting', "nd:puppet_secret={}".format(secret)]:
@@ -161,10 +173,10 @@ def create_rightscale_puppet_tags(secret):
             cmd, "Failed to register RightScale tag \'{}\' for Puppet policy-base signing!".format(tag))
 
 
-#
-#
-#
 def create_puppet_agent_cert():
+    """
+    Embed Nextdoor information into the Puppet agent CSR/cert.
+    """
     challenge_password = False
     preshared_key = ''.join(random.choice(
         string.ascii_letters + string.digits) for _ in range(36))
@@ -192,10 +204,10 @@ def create_puppet_agent_cert():
     create_rightscale_puppet_tags(preshared_key)
 
 
-#
-#
-#
 def run_puppet_agent():
+    """
+    Kick off a Puppet agent run. With retries to cover eventual convergence.
+    """
 
     cmd = "/usr/bin/puppet agent -t --detailed-exitcodes --waitforcert 15"
 
@@ -219,10 +231,10 @@ def run_puppet_agent():
     assert_command(cmd, 'Puppet run failed!', retries=5)
 
 
-#
-#
-#
 def main():
+    """
+    The Fun Starts Here.
+    """
     detect_debug_mode()
     if not puppet_bootstrapped():
         install_dependencies()
@@ -236,8 +248,5 @@ def main():
             "   *** Puppet probably bootstrapped previously. Exiting... ***   ")
 
 
-#
-#
-#
 if '__main__' == __name__:
     main()

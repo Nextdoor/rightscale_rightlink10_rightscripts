@@ -4,7 +4,11 @@
 # RightScript Name: nextdoor::elb-disconnect
 # Description:
 # Packages:
-# ...
+#   - AWS_ACCESS_KEY_ID
+#   - AWS_SECRET_ACCESS_KEY
+#   - EC2_INSTANCE_ID
+#   - ELB_NAME
+#   - EC2_PLACEMENT_AVAILABILITY_ZONE
 #
 
 from os import environ
