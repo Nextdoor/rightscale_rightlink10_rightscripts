@@ -62,7 +62,8 @@ def get_ephemeral_volumes(instance_vol_list):
     # Now, for every potential volume listed in the config, walk through it..
     for potential_volume in instance_vol_list:
         # Check if the volume exists...
-        print("INFO: (%s) checking if ephemeral vol is available..." % (potential_volume))
+        print("INFO: (%s) checking if ephemeral vol is available..." %
+              (potential_volume))
         if not os.path.exists(potential_volume):
             continue
         if not stat.S_ISBLK(os.stat(potential_volume).st_mode):
@@ -76,13 +77,14 @@ def get_ephemeral_volumes(instance_vol_list):
 
         # We got through our checks... add this item to our array of valid
         # drives to use
-        print("INFO: (%s) is available, adding it to our list..." % (potential_volume))
+        print("INFO: (%s) is available, adding it to our list..." %
+              (potential_volume))
         valid_volumes.append(potential_volume)
 
     # If we have less than two drives available, exit quietly.
     if valid_volumes.__len__() < 2:
         os.system("mount -a")
-        print "INFO: Less than 2 volumes found -- exiting quietly."
+        print("INFO: Less than 2 volumes found -- exiting quietly.")
         sys.exit(0)
 
     # Return our valid volumes

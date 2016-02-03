@@ -1,4 +1,5 @@
-import os, fnmatch
+import os
+import fnmatch
 from invoke import run, task, Collection
 from colorama import init, Fore
 
@@ -39,7 +40,7 @@ flake8 --count --statistics --show-source --show-pep8 --max-line-length=160 \
     # won't get here unless things run clean
     print(Fore.GREEN + "Exit code: {}".format(result.return_code))
 
-    
+
 @task
 def lint_fix():
     print(Fore.GREEN + "Lint fixing Python files...")
@@ -47,19 +48,24 @@ def lint_fix():
     python_files = find_files('*.py')
     cmd = """
 autopep8 --in-place --ignore={} {}
-""".format(PEP8_IGNORE, python_files)
+""".format(PEP8_IGNORE, ' '.join(python_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean
     print(Fore.GREEN + "Exit code: {}".format(result.return_code))
-    
 
 
 @task(syntax, lint_check, lint_fix)
 def test():
     pass
 
-ns = Collection('lint')
-ns.add_task(lint_check, 'check')
-ns.add_task(lint_fix, 'fix')
-ns.add_collection('lint')
+
+ns = Collection('')
+
+lint = Collection('lint')
+lint.add_task(lint_check, 'check')
+lint.add_task(lint_fix, 'fix')
+ns.add_collection(lint)
+
+ns.add_task(test, 'test')
+ns.add_task(syntax, 'syntax')

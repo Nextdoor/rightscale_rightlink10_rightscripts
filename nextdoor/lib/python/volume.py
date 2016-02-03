@@ -100,7 +100,8 @@ def get_ephemeral_volumes(instance_vol_list):
     # Now, for every potential volume listed in the config, walk through it..
     for potential_volume in instance_vol_list:
         # Check if the volume exists...
-        print("INFO: (%s) checking if ephemeral vol is available..." % (potential_volume))
+        print("INFO: (%s) checking if ephemeral vol is available..." %
+              (potential_volume))
         if not os.path.exists(potential_volume):
             continue
         if not stat.S_ISBLK(os.stat(potential_volume).st_mode):
@@ -114,7 +115,8 @@ def get_ephemeral_volumes(instance_vol_list):
 
         # We got through our checks... add this item to our array of valid
         # drives to use
-        print("INFO: (%s) is available, adding it to our list..." % (potential_volume))
+        print("INFO: (%s) is available, adding it to our list..." %
+              (potential_volume))
         valid_volumes.append(potential_volume)
 
     # If we have less than two drives available, exit quietly.
@@ -154,10 +156,12 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
     # remove it from the potential 'device targets'
     for potential_volume in ebs_vol_list:
         if os.path.exists(potential_volume):
-            print "INFO: (%s) is already an attached EBS volume." % (potential_volume)
+            print("INFO: ({}) is already an attached EBS volume.".format(
+                potential_volume))
             attached_ebs_vol_list.append(potential_volume)
         else:
-            print "INFO: (%s) is available as a disk target." % (potential_volume)
+            print("INFO: ({}) is available as a disk target.".format(
+                potential_volume))
             available_ebs_vol_list.append(potential_volume)
 
     # Reverse our available_ebs_vol_list so that we can 'pop' from the
@@ -168,17 +172,19 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
     # and do not do anything with them. This script does not support handling multiple sets of EBS
     # volumes.
     if attached_ebs_vol_list.__len__() > 0:
-        print "WARNING: EBS volumes are already attached to this host. Passing them back and not touching them."
+        print("WARNING: EBS volumes are already attached to this host. Passing them back and not touching them.")
         return attached_ebs_vol_list
 
     # Make sure we have enough target devices available
     if volcount > available_ebs_vol_list.__len__():
-        print "ERROR: Do not have enough local volume targets available to attach the drives."
+        print(
+            "ERROR: Do not have enough local volume targets available to attach the drives.")
         sys.exit(1)
 
     # For each volume..
     for i in range(0, volcount):
-        print "INFO: Requesting EBS volume creation (%s gb)..." % (individual_vol_size)
+        print("INFO: Requesting EBS volume creation (%s gb)...".format(
+            individual_vol_size))
 
         # 30:1 GB:IOP ratio, with a max of 4000
         iops = individual_vol_size * 30
