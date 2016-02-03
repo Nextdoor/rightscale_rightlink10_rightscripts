@@ -100,7 +100,7 @@ def get_ephemeral_volumes(instance_vol_list):
     # Now, for every potential volume listed in the config, walk through it..
     for potential_volume in instance_vol_list:
         # Check if the volume exists...
-        print "INFO: (%s) checking if ephemeral vol is available..." % (potential_volume)
+        print("INFO: (%s) checking if ephemeral vol is available..." % (potential_volume))
         if not os.path.exists(potential_volume):
             continue
         if not stat.S_ISBLK(os.stat(potential_volume).st_mode):
@@ -114,12 +114,12 @@ def get_ephemeral_volumes(instance_vol_list):
 
         # We got through our checks... add this item to our array of valid
         # drives to use
-        print "INFO: (%s) is available, adding it to our list..." % (potential_volume)
+        print("INFO: (%s) is available, adding it to our list..." % (potential_volume))
         valid_volumes.append(potential_volume)
 
     # If we have less than two drives available, exit quietly.
     if valid_volumes.__len__() < 1:
-        print "INFO: Less than two ephemeral volumes detected. Punting..."
+        print("INFO: Less than two ephemeral volumes detected. Punting...")
         os.system("mount -a")
         sys.exit(0)
 
@@ -144,7 +144,7 @@ def get_ebs_volumes(awskey, awssecret, ebs_vol_list, volcount, volsize,
     attached_ebs_vol_list = []
 
     # Open our EC2 connection
-    print "INFO: Connecting to Amazon..."
+    print("INFO: Connecting to Amazon...")
     ec2 = boto.connect_ec2(aws_access_key_id=awskey,
                            aws_secret_access_key=awssecret)
     ec2 = boto.ec2.connect_to_region(

@@ -52,7 +52,7 @@ def elb_disconnect():
                 utils.assert_command(
                     "python /tmp/kingpin {}".format(kp_script.name), "Failed during Kingpin run!")
 
-        except (IOError, KeyError), e:
+        except (IOError, KeyError) as e:
             errno = -1
             if 'IOError' == type(e):
                 errno = e.errno

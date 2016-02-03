@@ -56,7 +56,7 @@ def configure_puppet_external_facts():
             with open('/etc/puppet/facter/facts.d/nextdoor_from_rightscale_input.yaml', 'w') as outfile:
                 outfile.write(
                     yaml.dump(fact_dict, explicit_start=True, default_flow_style=False))
-        except IOError, e:
+        except IOError as e:
             sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno,
                                                            e.filename, e.strerror))
 
@@ -183,7 +183,7 @@ def create_puppet_agent_cert():
         with open('/etc/puppet/csr_attributes.yaml', 'wb') as outfile:
             outfile.write(
                 yaml.dump(csr_attrs, explicit_start=True, default_flow_style=False))
-        os.chmod('/etc/puppet/csr_attributes.yaml', 0644)
+        os.chmod('/etc/puppet/csr_attributes.yaml', '0644')
 
     except (IOError, OSError) as e:
         sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno,

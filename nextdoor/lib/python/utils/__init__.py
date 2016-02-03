@@ -61,7 +61,7 @@ def is_volumized():
 #
 def log_and_stdout(msg):
     logger.info(msg)
-    print msg
+    print(msg)
 
 #
 #
