@@ -3,7 +3,7 @@ import fnmatch
 from invoke import run, task, Collection
 from colorama import init, Fore
 
-PEP8_IGNORE = 'E402,E266'
+PEP8_IGNORE = 'E402,E266,F841'
 init()
 
 
@@ -32,7 +32,7 @@ def syntax():
     print(Fore.GREEN + "Syntax checking of Python files...")
 
     python_files = find_files('*.py')
-    cmd = "pyflakes {}".format(' '.join(python_files))
+    cmd = "python -m py_compile {}".format(' '.join(python_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean

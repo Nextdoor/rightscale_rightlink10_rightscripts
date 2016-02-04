@@ -99,7 +99,7 @@ def google_mount():
     assert_command(mount_command, 'Unable to mount the cloud storage!') and \
         volumize()
 
-    
+
 def mount_volumes():
     """
     Mount all configured storage volumes.

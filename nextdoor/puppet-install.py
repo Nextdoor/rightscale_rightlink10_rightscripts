@@ -15,7 +15,7 @@
 #   - PUPPET_CA_SERVER
 #   - PUPPET_SERVER_HOSTNAME
 #   - PUPPET_ENVIRONMENT_NAME
-#   - 
+#   -
 #
 
 import os

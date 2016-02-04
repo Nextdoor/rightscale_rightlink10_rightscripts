@@ -53,7 +53,7 @@ def set_hostname_w_fqdn():
     mydomain = normalize_domain(os.environ['DEFAULT_DOMAIN'])
 
     # Because RightScale appears to eat stdout. :\
-        #    utils.assert_command("puppecho {}.{} > /etc/hostname".format(myhostname, mydomain), "Could not modify /etc/hostname!")
+    #    utils.assert_command("puppecho {}.{} > /etc/hostname".format(myhostname, mydomain), "Could not modify /etc/hostname!")
     utils.assert_command("augtool set /files/etc/hostname/hostname {}.{}".format(
         myhostname, mydomain), "Could not modify /etc/hostname!")
     utils.assert_command("hostname -F /etc/hostname",
@@ -66,7 +66,7 @@ def normalize_domain(mydomain):
 
     Args:
       mydomain (str): the domainname to normalize
-    
+
     Returns: a normalized hostname as a string
     """
     return utils.normalize_hostname_to_rfc(mydomain)
