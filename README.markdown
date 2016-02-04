@@ -6,8 +6,5 @@ Various Boot and Operational scripts for use with RightScale RightLink10.
 
 ## Requirements
 
-* FIXME 
-
-## Install and Usage
-
-* FIXME
+* python >= 3.x.x
+* pip
