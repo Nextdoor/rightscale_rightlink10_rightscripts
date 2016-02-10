@@ -30,9 +30,13 @@ def syntax():
     Recursively syntax check Python files in this project using pyflakes.
     """
     print(Fore.GREEN + "Syntax checking of Python files...")
-
     python_files = find_files('*.py')
     cmd = "python -m py_compile {}".format(' '.join(python_files))
+    result = run(cmd, echo=True)
+
+    print(Fore.GREEN + "Syntax checking of Ruby files...")
+    ruby_files = find_files('*.rb')
+    cmd = "ruby -c {}".format(' '.join(ruby_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean
