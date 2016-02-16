@@ -198,9 +198,10 @@ def dump_environment(to_var=False):
       to_var (boolean): also dump the env vars to /var?
     """
     print(
-        json.dumps(environ.__dict__,
+        json.dumps({k: os.environ[k] for k in os.environ.keys()},
                    indent=4,
-                   sort_keys=True))
+                   sort_keys=True))    
+
     if to_var:
         try:
             with open('env.sh', 'w') as env_log:
