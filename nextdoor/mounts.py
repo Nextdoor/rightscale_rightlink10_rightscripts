@@ -22,8 +22,7 @@ import os
 from os import environ
 import sys
 
-sys.path.append('./lib/python')
-from utils import detect_debug_mode, assert_command, validate_env, is_volumized, volumize
+from lib.python import utils
 
 
 def install_dependencies():

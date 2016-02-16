@@ -25,7 +25,7 @@ import string
 import random
 from os import environ
 
-sys.path.append('./lib/python')
+from lib.python import utils
 from utils import detect_debug_mode, assert_command, validate_env, mkdir_p, normalize_hostname_to_rfc
 from utils import log_and_stdout
 

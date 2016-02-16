@@ -17,7 +17,7 @@ import sys
 import os
 import re
 
-import lib.python.utils as utils
+from lib.python import utils
 
 
 def normalize_hostname(myservername, myinstanceid):

@@ -16,7 +16,7 @@ from os import environ
 from tempfile import NamedTemporaryFile
 from string import Template
 
-import lib.python.utils as utils
+from lib.python import utils
 
 
 #

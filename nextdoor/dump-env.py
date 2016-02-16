@@ -9,6 +9,6 @@
 #   - DEBUG
 #
 
-from lib.python.utils import utils
+from lib.python import utils
 
 utils.dump_environment()
