@@ -42,7 +42,7 @@ def set_hostname_w_fqdn():
             'SERVER_NAME': '^.+$',
             'INSTANCE_ID': '^.+$',
             'DEFAULT_DOMAIN': '^.+\.nextdoor\.com'
-    }.iteritems():
+    }.items():
         utils.validate_env(key, regex)
 
     myhostname = normalize_hostname(

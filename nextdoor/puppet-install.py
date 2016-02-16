@@ -105,7 +105,7 @@ def bootstrap_puppet_config():
         'PUPPET_SERVER_HOSTNAME': dmc,
         'PUPPET_CA_SERVER': dmc,
         'PUPPET_ENABLE_REPORTS': '^(true|false)$',
-    }.iteritems():
+    }.items():
         validate_env(key, regex)
 
     external_facts = {
@@ -120,7 +120,7 @@ def bootstrap_puppet_config():
     if '' != puppet_node_name:
         external_facts = external_facts.update({'node': puppet_node_name})
 
-    for setting, value in external_facts.iteritems():
+    for setting, value in external_facts.items():
         assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
                        'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
 
@@ -222,7 +222,7 @@ def run_puppet_agent():
         'PUPPET_ENVIRONMENT_NAME': 'environment',
         'PUPPET_SERVER_HOSTNAME': 'server',
         'PUPPET_CA_SERVER': 'ca_server',
-    }.iteritems():
+    }.items():
         if key in environ:
             validate_env(key, dmc)
             cmd = ''.join((cmd, " --{} {}".format(value, environ[key])))

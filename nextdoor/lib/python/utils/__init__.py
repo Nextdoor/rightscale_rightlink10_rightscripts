@@ -206,7 +206,7 @@ def dump_environment(to_var=False):
         try:
             with open('env.sh', 'w') as env_log:
                 env_log.write("# {}\n".format(time.strftime("%c")))
-                for key, value in environ.iteritems():
+                for key, value in environ.items():
                     env_log.write("export {}={}\n".format(key, value))
         except IOError:
             pass

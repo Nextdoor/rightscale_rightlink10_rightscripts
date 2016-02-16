@@ -33,7 +33,7 @@ def elb_disconnect():
                 'EC2_PLACEMENT_AVAILABILITY_ZONE': dmc,
                 'EC2_INSTANCE_ID': dmc,
                 'HOME': dmc,
-        }.iteritems():
+        }.items():
             utils.validate_env(key, validation)
 
         # install disposable Kingpin
