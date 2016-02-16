@@ -25,9 +25,8 @@ import string
 import random
 from os import environ
 
-from lib.python import utils
-from utils import detect_debug_mode, assert_command, validate_env, mkdir_p, normalize_hostname_to_rfc
-from utils import log_and_stdout
+from lib.python.utils import detect_debug_mode, assert_command, validate_env, mkdir_p, normalize_hostname_to_rfc
+from lib.python.utils import log_and_stdout
 
 
 def install_dependencies():
