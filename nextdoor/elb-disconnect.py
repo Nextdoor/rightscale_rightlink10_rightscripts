@@ -1,4 +1,4 @@
-#! /usr/bin/sudo /usr/bin/python
+#! /usr/bin/sudo /usr/bin/python3
 
 # ---
 # RightScript Name: nextdoor::elb-disconnect
