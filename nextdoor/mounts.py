@@ -58,7 +58,7 @@ def ec2_mount():
         'AWS_SECRET_ACCESS_KEY': '^.+$',
         'STORAGE_TYPE': '^(instance|ebs|remount-ebs)$',
         'EBS_TYPE': '^(standard|gp2|io1)$',
-    }.iteritems():
+    }.items():
         validate_env(key, regex)
 
     if not 'instance' == os.environ['STORAGE_TYPE']:
@@ -113,7 +113,7 @@ def mount_volumes():
                 'STORAGE_MOUNTPOINT': '^\/.+$',
                 'STORAGE_RAID_LEVEL': '^(0|1|5|10)',
                 'STORAGE_FSTYPE': '^(xfs|ext3|ext4)$'
-        }.iteritems():
+        }.items():
             validate_env(key, regex)
 
         if 0 < os.environ['STORAGE_VOLCOUNT']:
