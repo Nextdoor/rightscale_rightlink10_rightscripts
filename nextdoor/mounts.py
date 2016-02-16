@@ -22,7 +22,8 @@ import os
 from os import environ
 import sys
 
-from lib.python import utils
+from lib.python.utils import detect_debug_mode, assert_command, validate_env
+from lib.python.utils import is_volumized, volumize
 
 
 def install_dependencies():
