@@ -29,9 +29,9 @@ def install_dependencies():
     """
     Instal some utilities we are goig to need to bootstrap Pupppet.
     """
-    debs = 'python-pip xfsprogs'
+    debs = 'python-pip xfsprogs python3-pip python3-yaml'
     blacklist_debs = 'python-boto'
-    pip_packages = 'boto'
+    python27_packages = 'boto'
 
     environ['DEBIAN_FRONTEND'] = 'noninteractive'
     environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
@@ -41,9 +41,8 @@ def install_dependencies():
                    'Unable to install required .debs!')
     assert_command('apt-get remove --purge -y ' + blacklist_debs,
                    'Unable to remove blacklisted .deb!')
-    assert_command('pip install ' + pip_packages,
-                   'Unable to install a pip package!')
-
+    assert_command('pip2 install ' + python27_packages,
+                   'Unable to install a pip2 package!')
     return True
 
 
@@ -116,7 +115,7 @@ def mount_volumes():
         }.items():
             validate_env(key, regex)
 
-        if 0 < os.environ['STORAGE_VOLCOUNT']:
+        if 0 < int(os.environ['STORAGE_VOLCOUNT']):
             if 'ec2' == os.environ['RS_CLOUD_PROVIDER']:
                 ec2_mount()
             else:

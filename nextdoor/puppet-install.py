@@ -193,8 +193,9 @@ def create_puppet_agent_cert():
     try:
         with open('/etc/puppet/csr_attributes.yaml', 'wb') as outfile:
             outfile.write(
-                yaml.dump(csr_attrs, explicit_start=True, default_flow_style=False))
-        os.chmod('/etc/puppet/csr_attributes.yaml', '0644')
+                yaml.dump(csr_attrs, explicit_start=True,
+                          default_flow_style=False, encoding='utf-8'))
+        os.chmod('/etc/puppet/csr_attributes.yaml', 0o644)
 
     except (IOError, OSError) as e:
         sys.exit("   *** {} :: {} :: {} ***   ".format(e.errno,

@@ -86,6 +86,8 @@ def log_and_stdout(msg):
     Returns
       nothing
     """
+    if isinstance(msg, bytes) or isinstance(msg, bytearray):
+        msg = msg.decode('utf-8')
     logger.info(msg)
     print(msg)
 
@@ -207,6 +209,6 @@ def dump_environment(to_var=False):
             with open('env.sh', 'w') as env_log:
                 env_log.write("# {}\n".format(time.strftime("%c")))
                 for key, value in environ.items():
-                    env_log.write("export {}={}\n".format(key, value))
+                    env_log.write('export {}="{}"\n'.format(key, value))
         except IOError:
             pass
