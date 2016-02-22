@@ -48,7 +48,7 @@ def install_dependencies():
 
 def configure_puppet_external_facts():
     """
-    Create Nextdoor Facts as External Facts.
+    Create external Facts from misc RightInputs.
     """
 
     if 'PUPPET_CUSTOM_FACTS' in environ:
@@ -63,7 +63,7 @@ def configure_puppet_external_facts():
         # construct some YAML and dump it into external fact file
         try:
             mkdir_p('/etc/puppet/facter/facts.d')
-            with open('/etc/puppet/facter/facts.d/nextdoor_from_rightscale_input.yaml', 'w') as outfile:
+            with open('/etc/puppet/facter/facts.d/nextdoor_misc_rightscale_inputs.yaml', 'w') as outfile:
                 outfile.write(
                     yaml.dump(fact_dict, explicit_start=True, default_flow_style=False))
         except IOError as e:
@@ -93,9 +93,10 @@ def resolve_puppet_node_name():
     return puppet_node
 
 
-def bootstrap_puppet_config():
+def bootstrap_puppet_agent_config():
     """
-    Adjust various settings in puppet.conf
+    Adjust various settings in puppet.conf and create an external Facts file
+    for Puppet-specific stuff.
     """
     dmc = '^.+$'
 
@@ -124,6 +125,19 @@ def bootstrap_puppet_config():
         assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
                        'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
 
+    try:
+        mkdir_p('/etc/puppet/facter/facts.d')
+        with open('/etc/puppet/facter/facts.d/nextdoor_puppet.yaml', 'w') as outfile:
+            outfile.write(
+                yaml.dump(external_facts,
+                          explicit_start=True,
+                          default_flow_style=False))
+    except IOError as e:
+        sys.exit("   *** {} :: {} :: {} ***   ".format(
+            e.errno,
+            e.filename,
+            e.strerr))
+
 
 def install_puppet_agent():
     """
@@ -144,7 +158,7 @@ def install_puppet_agent():
         puppet_version, puppet_version), 'Failed to install Puppet!')
 
 
-def puppet_bootstrapped():
+def puppet_agent_bootstrapped():
     """
     Predicate to detect if Puppet has already been installed.
 
@@ -231,16 +245,23 @@ def run_puppet_agent():
     assert_command(cmd, 'Puppet run failed!', retries=5)
 
 
+def configure_puppet_agent():
+    """
+    Encode various settings in puppet.conf and setup Nextdoor external Facts.
+    """
+    configure_puppet_external_facts()
+    bootstrap_puppet_agent_config()
+
+
 def main():
     """
     The Fun Starts Here.
     """
     detect_debug_mode()
-    if not puppet_bootstrapped():
+    if not puppet_agent_bootstrapped():
         install_dependencies()
         install_puppet_agent()
-        configure_puppet_external_facts()
-        bootstrap_puppet_config()
+        configure_puppet_agent()
         create_puppet_agent_cert()
         run_puppet_agent()
     else:
