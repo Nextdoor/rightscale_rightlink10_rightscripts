@@ -62,8 +62,8 @@ def configure_puppet_external_facts():
 
         # construct some YAML and dump it into external fact file
         try:
-            mkdir_p('/etc/puppet/facter/facts.d')
-            with open('/etc/puppet/facter/facts.d/nextdoor_misc_rightscale_inputs.yaml', 'w') as outfile:
+            mkdir_p('/etc/facter/facts.d')
+            with open('/etc/facter/facts.d/nextdoor_misc_rightscale_inputs.yaml', 'w') as outfile:
                 outfile.write(
                     yaml.dump(fact_dict, explicit_start=True, default_flow_style=False))
         except IOError as e:
@@ -132,8 +132,8 @@ def bootstrap_puppet_agent_config():
             if key in external_facts:
                 external_facts['puppet_' + key] = external_facts.pop(key)
 
-        mkdir_p('/etc/puppet/facter/facts.d')
-        with open('/etc/puppet/facter/facts.d/nextdoor_puppet.yaml', 'w') as outfile:
+        mkdir_p('/etc/facter/facts.d')
+        with open('/etc/facter/facts.d/nextdoor_puppet.yaml', 'w') as outfile:
             outfile.write(
                 yaml.dump(external_facts,
                           explicit_start=True,
