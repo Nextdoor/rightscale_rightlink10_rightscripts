@@ -109,7 +109,7 @@ def bootstrap_puppet_agent_config():
     }.items():
         validate_env(key, regex)
 
-    external_facts = {
+    puppet_settings = {
         'environment': environ['PUPPET_ENVIRONMENT_NAME'],
         'node_name_fact': environ['PUPPET_NODE_NAME_FACT'],
         'server': environ['PUPPET_SERVER_HOSTNAME'],
@@ -119,17 +119,17 @@ def bootstrap_puppet_agent_config():
 
     puppet_node_name = resolve_puppet_node_name()
     if '' != puppet_node_name:
-        external_facts = external_facts.update({'node': puppet_node_name})
+        puppet_settings = puppet_settings.update({'node': puppet_node_name})
 
-    for setting, value in external_facts.items():
+    for setting, value in puppet_settings.items():
         assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
                        'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
 
     try:
-        # have to make some adjustments to key names to line up with the
-        # Nextdoor Puppet codebase...
+        # Drop some external Facts for Puppet settings
+        external_facts = {}
         for key in ['environment', 'node', 'server', 'ca_server']:
-            if key in external_facts:
+            if key in puppet_settings:
                 external_facts['puppet_' + key] = external_facts.pop(key)
 
         mkdir_p('/etc/facter/facts.d')
