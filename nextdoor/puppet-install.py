@@ -5,6 +5,7 @@
 # Description:
 # Parameters:
 #   - DEBUG
+#   - PUPPET_AGENT_USE_CACHED_CATALOG
 #   - PUPPET_AGENT_VERSION
 #   - PUPPET_CUSTOM_FACTS
 #   - PUPPET_NODE
@@ -15,7 +16,6 @@
 #   - PUPPET_CA_SERVER
 #   - PUPPET_SERVER_HOSTNAME
 #   - PUPPET_ENVIRONMENT_NAME
-#   -
 #
 
 import os
