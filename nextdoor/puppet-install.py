@@ -243,6 +243,7 @@ def run_puppet_agent():
         'PUPPET_ENVIRONMENT_NAME': 'environment',
         'PUPPET_SERVER_HOSTNAME': 'server',
         'PUPPET_CA_SERVER': 'ca_server',
+        'PUPPET_AGENT_USE_CACHED_CATALOG': 'use_cached_catalog',
     }.items():
         if key in environ:
             validate_env(key, dmc)
