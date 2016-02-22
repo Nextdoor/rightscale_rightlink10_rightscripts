@@ -130,7 +130,7 @@ def bootstrap_puppet_agent_config():
         external_facts = {}
         for key in ['environment', 'node', 'server', 'ca_server']:
             if key in puppet_settings:
-                external_facts['puppet_' + key] = external_facts.pop(key)
+                external_facts['puppet_' + key] = puppet_settings[key]
 
         mkdir_p('/etc/facter/facts.d')
         with open('/etc/facter/facts.d/nextdoor_puppet.yaml', 'w') as outfile:
