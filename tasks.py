@@ -25,6 +25,20 @@ def find_files(pattern):
 
 
 @task
+def prep():
+    """
+    Download and place external dependencies as a way to avoid
+    git submodules/subtrees. Would be nice if librarian could be leveraged...
+    """
+    repos = ['']
+    for repo in repos:
+        # cd to appropriate libdir
+        # clone repo
+        # checkout out branch/tag/commit
+        pass
+
+
+@task
 def syntax():
     """
     Recursively syntax check Python files in this project using pyflakes.
