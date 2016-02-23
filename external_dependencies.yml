@@ -1,0 +1,12 @@
+---
+repos:
+
+  kingpin:
+    type: python
+    source: https://github.com/nextdoor/kingpin
+    ref: master
+
+  storage-scripts:
+    type: shell
+    source: https://github.com/diranged/storage-scripts
+    ref: master

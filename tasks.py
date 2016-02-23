@@ -2,6 +2,7 @@ import os
 import fnmatch
 from invoke import run, task, Collection
 from colorama import init, Fore
+import yaml
 
 PEP8_IGNORE = 'E402,E266,F841'
 init()
@@ -30,19 +31,30 @@ def prep():
     Download and place external dependencies as a way to avoid
     git submodules/subtrees. Would be nice if librarian could be leveraged...
     """
-    repos = ['']
-    for repo in repos:
-        # cd to appropriate libdir
-        # clone repo
-        # checkout out branch/tag/commit
-        pass
+    # find deps file and load deps from YAML
+    # for repo in repos:
+    # cd to appropriate libdir
+    # clone repo
+    # checkout out branch/tag/commit
+    pass
 
 
 @task
 def syntax():
     """
-    Recursively syntax check Python files in this project using pyflakes.
+    Recursively syntax check various files.
     """
+
+    print(Fore.GREEN + "Syntax checking of YAML files...")
+    yaml_files = find_files('*.yaml') + find_files('*.yml')
+    for yaml_file in yaml_files:
+        with open(yaml_file, 'r') as f:
+            print(Fore.WHITE + yaml_file)
+            try:
+                yaml.load(f)
+            except yaml.YAMLError as e:
+                print(Fore.RED + str(e))
+
     print(Fore.GREEN + "Syntax checking of Python files...")
     python_files = find_files('*.py')
     cmd = "python -m py_compile {}".format(' '.join(python_files))
