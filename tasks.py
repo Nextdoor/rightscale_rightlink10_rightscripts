@@ -92,5 +92,6 @@ lint.add_task(lint_check, 'check')
 lint.add_task(lint_fix, 'fix')
 ns.add_collection(lint)
 
+ns.add_task(prep, 'prep')
 ns.add_task(test, 'test')
 ns.add_task(syntax, 'syntax')
