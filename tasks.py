@@ -1,4 +1,4 @@
-import os
+import os, sys
 import fnmatch
 from invoke import run, task, Collection
 from colorama import init, Fore
@@ -31,12 +31,29 @@ def prep():
     Download and place external dependencies as a way to avoid
     git submodules/subtrees. Would be nice if librarian could be leveraged...
     """
+
+    newcwd = sys.path[0]
+    if '' != newcwd:
+        # I'm not sure this is absolutely necessary but to be careful...
+        print(Fore.GREEN + "Changing cwd to {}".format(newcwd))
+        os.chdir(sys.path[0])
+    else:
+        sys.exit("I am very confused about our sys.path[0] of ''!")
+
+    deps = {}
+    with open('external_dependencies.yml') as deps:
+        try:
+            deps = yaml.load(deps)
+        except yaml.YAMLError as e:
+            print(Fore.RED + str(e))
+            sys.exit(-1)
+
+    print(str(deps))
     # find deps file and load deps from YAML
     # for repo in repos:
     # cd to appropriate libdir
     # clone repo
     # checkout out branch/tag/commit
-    pass
 
 
 @task

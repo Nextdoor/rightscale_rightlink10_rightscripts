@@ -1,0 +1,15 @@
+---
+- hosts: all
+  tasks:
+  - name: repo - kingin
+    git:
+      repo: git://github.com/nextdoor/kingpin
+      dest: nextdoor/lib/python/kingpin
+      version: master
+      accept_hostkey: true
+  - name: repo - storage-scripts
+    git:
+      repo: git://github.com/diranged/storage-scripts
+      dest: nextdoor/lib/python/storage-scripts
+      version: master
+      accept_hostkey: true
