@@ -22,7 +22,7 @@ import os
 from os import environ
 
 from lib.python.utils import detect_debug_mode, assert_command, validate_env
-from lib.python.utils import is_volumized, volumize
+from lib.python.utils import is_volumized, volumize, apt_get_update
 
 
 def install_dependencies():
@@ -36,7 +36,7 @@ def install_dependencies():
     environ['DEBIAN_FRONTEND'] = 'noninteractive'
     environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
 
-    assert_command('apt-get update', 'Unable to update APT cache!')
+    apt_get_update()
     assert_command('apt-get install -y ' + debs,
                    'Unable to install required .debs!')
     assert_command('apt-get remove --purge -y ' + blacklist_debs,

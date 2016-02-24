@@ -212,3 +212,34 @@ def dump_environment(to_var=False):
                     env_log.write('export {}="{}"\n'.format(key, value))
         except IOError:
             pass
+
+
+def apt_get_update(refresh_interval_mins=30):
+    """
+    Run apt-get update if it has not been run within specified minutes.
+    """
+
+    refresh_interval = refresh_interval_mins * 60
+    time_stamp_file = '/var/run/nextdoor_apt_get_update.lock'
+    run_cmd = False  # shall we run the apt-get
+
+    if not os.path.exists(time_stamp_file):
+        open(time_stamp_file, 'w').close()
+        run_cmd = True
+    else:
+        try:
+            mtime = os.path.getmtime(time_stamp_file)
+            if time.time() - mtime > refresh_interval:
+                open(time_stamp_file, 'w').close()
+                run_cmd = True
+            else:
+                log_and_stdout("apt-get update run {} minutes ago. "
+                               "Not re-running.".format(
+                                   str(refresh_interval_mins)))
+
+        except OSError as e:
+            run_cmd = True
+
+    if True is run_cmd:
+        assert_command('apt-get update', 'Failed to update package cache!',
+                       retries=5)
