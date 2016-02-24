@@ -11,7 +11,7 @@ PEP8_IGNORE = 'E402,E266,F841'
 init()
 
 
-def find_files(pattern):
+def find_files(pattern, excludes=[]):
     """
     Recursive find of files matching pattern starting at location of this script.
 
@@ -25,6 +25,13 @@ def find_files(pattern):
     for root, dirnames, filenames in walk(os.path.dirname(__file__)):
         for filename in fnmatch.filter(filenames, pattern):
             matches.append(os.path.join(root, filename))
+            
+    # double list comprehension...no, just loop
+    newmatches = []
+    for match in matches.items():
+        if not all(exclude in match for exclude in excludes):
+            newmatches.append(match)
+        
     return matches
 
 
@@ -63,8 +70,10 @@ def handle_repo(repo):
     source = repo['source']
     ref = repo['ref']
     result = run("git clone {} {} && "\
+                 "cd {} &&"\
                  " git checkout {} && "\
-                 " rm -rf {}/.git".format(source, dest, ref, dest), echo=True)
+                 " rm -rf {}/.git".format(source, dest, dest, ref, dest),
+                 echo=True)
     if 0 != result:
         print(Fore.RED + "Failed checking out repo: {} / {} to '{}'!".format(
             source, ref, dest))
@@ -106,6 +115,8 @@ def syntax():
     Recursively syntax check various files.
     """
 
+    excludes = ['./nextdoor/lib/python/kingpin']
+
     print(Fore.GREEN + "Syntax checking of YAML files...")
     yaml_files = find_files('*.yaml') + find_files('*.yml')
     for yaml_file in yaml_files:
@@ -117,7 +128,7 @@ def syntax():
                 print(Fore.RED + str(e))
 
     print(Fore.GREEN + "Syntax checking of Python files...")
-    python_files = find_files('*.py')
+    python_files = find_files('*.py', excludes=excludes)
     cmd = "python -m py_compile {}".format(' '.join(python_files))
     result = run(cmd, echo=True)
 
@@ -137,10 +148,12 @@ def lint_check():
     """
     print(Fore.GREEN + "Lint checking of Python files...")
 
+    excludes = 'nextdoor/lib/python/kingpin/*'
+
     python_files = find_files('*.py')
     cmd = """
-flake8 --count --statistics --show-source --show-pep8 --max-line-length=160 \
---ignore={} {}""".format(PEP8_IGNORE, ' '.join(python_files))
+flake8 --exclude '{}' --count --statistics --show-source --show-pep8 --max-line-length=160 \
+--ignore={} {}""".format(excludes, PEP8_IGNORE, ' '.join(python_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean
