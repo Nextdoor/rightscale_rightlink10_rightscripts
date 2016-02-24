@@ -86,6 +86,10 @@ def google_mount():
     """
     Mount a Google volume.
     """
+
+    print("Google Cloud is no longer supported!")
+    sys.exit(-1)
+    
     mount_command = "python ./lib/python/attic/google_volume.py -a instance -m {} {} -f {}"
 
     mount_command = mount_command.format(
