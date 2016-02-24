@@ -1,0 +1,29 @@
+# General App Requirements
+
+# 4.1+ is required for the @gen.with_timeout decorator.
+# http://tornado.readthedocs.org/en/latest/gen.html#tornado.gen.with_timeout
+tornado>=4.1
+
+# Used to make synchronous tasks asynchronous
+futures
+
+# Used to parse out the JSON and validate its format.
+simplejson
+jsonschema
+demjson
+
+# Colorize the log output!
+rainbow_logging_handler
+
+# Used for retrying non-asynchronous methods
+retrying
+
+# kingpin.actors.rightscale
+#
+# NOTE: Version specified in the setup.py file
+# NOTE: mock is used inside the rightscale actor
+python-rightscale>=0.1.5
+mock
+
+# kingpin.actors.aws
+boto>=2.32.1

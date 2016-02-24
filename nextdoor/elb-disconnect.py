@@ -39,7 +39,7 @@ def elb_disconnect():
         # install disposable Kingpin
         utils.assert_command(
             'mkdir -p /tmp/kingpin', 'Failed to create directory for temporary Kingpin script!')
-        utils.assert_command('unzip -o -u ./lib/kingpin/kingpin.zip -d /tmp/kingpin',
+        utils.assert_command('unzip -o -u ./lib/python/kingpin/kingpin.zip -d /tmp/kingpin',
                              'Failed to unpack temporary Kingpin instance!')
 
         # create and execute the Kingpin script for ELB reg

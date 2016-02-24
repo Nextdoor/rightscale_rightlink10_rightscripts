@@ -1,9 +1,0 @@
-{
-  "desc": "Add myself to ELB",
-  "actor": "aws.elb.DeregisterInstance",
-  "options": {
-    "region": "$EC2_PLACEMENT_AVAILABILITY_ZONE",
-    "elb": "$ELB_NAME",
-    "instances": "$EC2_INSTANCE_ID"
-  }
-}

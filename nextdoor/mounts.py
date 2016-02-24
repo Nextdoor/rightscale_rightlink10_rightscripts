@@ -50,7 +50,7 @@ def ec2_mount():
     """
     Perform a mount of the EBS volumes.
     """
-    mount_command = "python ./lib/python/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
+    mount_command = "python ./lib/python/attic/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
 
     for key, regex in {
         'AWS_ACCESS_KEY_ID': '^.+$',
@@ -86,7 +86,7 @@ def google_mount():
     """
     Mount a Google volume.
     """
-    mount_command = "python ./lib/python/google_volume.py -a instance -m {} {} -f {}"
+    mount_command = "python ./lib/python/attic/google_volume.py -a instance -m {} {} -f {}"
 
     mount_command = mount_command.format(
         os.environ['STORAGE_MOUNTPOINT'],

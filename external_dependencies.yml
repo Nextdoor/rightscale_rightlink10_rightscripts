@@ -1,0 +1,14 @@
+---
+repos:
+
+  kingpin:
+    type: git
+    source: https://github.com/nextdoor/kingpin
+    ref: v0.2.6
+    destination: ./nextdoor/lib/python/kingpin
+
+  storage-scripts:
+    type: git
+    source: https://github.com/diranged/storage-scripts
+    ref: 2a9da7ef98ae2b79053b7f04487f1e08a09331b5
+    destination: ./nextdoor/lib/shell/storage-scripts

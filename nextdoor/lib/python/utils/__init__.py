@@ -18,7 +18,7 @@ from subprocess import check_output, STDOUT, CalledProcessError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.handlers.SysLogHandler())
+logger.addHandler(logging.handlers.SysLogHandler('/dev/log'))
 
 
 def normalize_hostname_to_rfc(mystr):
