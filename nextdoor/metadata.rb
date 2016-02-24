@@ -97,7 +97,7 @@ attribute "INSTANCE_ID",
                        'nextdoor::elb-connect', 'nextdoor::elb-disconnect']
 
 attribute "PUPPET_AGENT_USE_CACHED_CATALOG",
-          :display_name => "PUPPET_AGENT_USED_CACHED_CATALOG",
+          :display_name => "PUPPET_AGENT_USE_CACHED_CATALOG",
           :description  => "Use cached catalog if one exists."\
                            " Can reduce master roundtrips during bootstrap.",
           :required     => "recommended",
