@@ -63,8 +63,8 @@ def handle_repo(repo):
     source = repo['source']
     ref = repo['ref']
     result = run("git clone {} {} && "\
-                 "git checkout {}"\
-                 "rm -rf {}/.git".format(source, dest, ref, dest), echo=True)
+                 " git checkout {} && "\
+                 " rm -rf {}/.git".format(source, dest, ref, dest), echo=True)
     if 0 != result:
         print(Fore.Red + "Failed checking out repo: {} / {} to '{}'!".format(
             source, ref, dest))
