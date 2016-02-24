@@ -12,7 +12,7 @@ init()
 
 # These things don't pass syntax/lint checks and are external deps.
 EXCLUDE_DIRS = ['nextdoor/lib/python/kingpin',
-                'nextdoor/lib/python/storage-scripts']
+                'nextdoor/lib/shell/storage-scripts']
 
 
 def find_files(pattern, excludes=[]):
