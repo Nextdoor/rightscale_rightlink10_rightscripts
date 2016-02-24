@@ -39,6 +39,9 @@ def handle_repo(repo):
     """
     Given a dictionary representing our repo settings, download and checkout.
     """
+
+    # These things are all required even though somem of them could
+    # be defaulted.
     required_keys = ('type', 'source', 'ref', 'destination')
     if not all(key in repo for key in required_keys):
         print(Fore.RED + str(repo))
@@ -46,11 +49,15 @@ def handle_repo(repo):
             str(required_keys)))
         sys.exit(-1)
 
+    # For now, just git repos. But who knows...whatever comes after git?
     if 'git' != repo['type']:
         print(Fore.RED + str(repo))
         print(Fore.RED + "repo type must be 'git'!")
         sys.exit(-1)
 
+    # Rather than try to play clever games with any existing dep caches,
+    # blow away what is in place and replace with a fresh clone + checkout.
+    # 'prep' task is *meant* to run only rarely anyway.
     dest = str(repo['destination'])
     if os.path.exists(dest):
         try:
@@ -67,6 +74,8 @@ def handle_repo(repo):
         print(Fore.RED + "Failed creating directory '{}'".format(dest))
         print(str(e))
 
+    # Fresh clone and checkout of the repo but *not* a submodule or subtree.
+    # The dep is cleansed of .git directory.
     source = repo['source']
     ref = repo['ref']
     result = run("git clone {} {} && "\
