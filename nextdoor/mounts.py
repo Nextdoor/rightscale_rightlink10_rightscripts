@@ -18,6 +18,7 @@
 #   - DEBUG
 #
 
+import sys
 import os
 from os import environ
 
@@ -87,9 +88,10 @@ def google_mount():
     Mount a Google volume.
     """
 
+    # Bail out! But I'm leaving the code here for reference.
     print("Google Cloud is no longer supported!")
     sys.exit(-1)
-    
+
     mount_command = "python ./lib/python/attic/google_volume.py -a instance -m {} {} -f {}"
 
     mount_command = mount_command.format(
