@@ -66,7 +66,7 @@ def handle_repo(repo):
                  " git checkout {} && "\
                  " rm -rf {}/.git".format(source, dest, ref, dest), echo=True)
     if 0 != result:
-        print(Fore.Red + "Failed checking out repo: {} / {} to '{}'!".format(
+        print(Fore.RED + "Failed checking out repo: {} / {} to '{}'!".format(
             source, ref, dest))
         sys.exit(-1)
 
