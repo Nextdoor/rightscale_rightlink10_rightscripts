@@ -12,25 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.pingdom`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Pingdom actors to pause and unpause checks. These are useful when you are aware
-of an expected downtime and don't want to be alerted about it. Also known as
-Maintenance mode.
-
-**Required Environment Variables**
-
-:PINGDOM_TOKEN:
-  Pingdom API Token
-
-:PINGDOM_USER:
-  Pingdom Username (email)
-
-:PINGDOM_PASS:
-  Pingdom Password
-"""
+"""Pingdom Actor objects"""
 
 import logging
 import os
@@ -124,28 +106,7 @@ class Pause(PingdomBase):
 
     """Start Pingdom Maintenance.
 
-    Pause a particular "check" on Pingdom.
-
-    **Options**
-
-    :name:
-      (Str) Name of the check
-
-    **Example**
-
-    .. code-block:: json
-
-       { "actor": "pingdom.Pause",
-         "desc": "Run Pause",
-         "options": {
-           "name": "fill-in"
-         }
-       }
-
-    **Dry run**
-
-    Will assert that the check name exists, but not take any action on it.
-    """
+    Pause a particular "check" on Pingdom."""
 
     @gen.coroutine
     def _execute(self):
@@ -165,28 +126,7 @@ class Unpause(PingdomBase):
 
     """Stop Pingdom Maintenance.
 
-    Unpause a particular "check" on Pingdom.
-
-    **Options**
-
-    :name:
-      (Str) Name of the check
-
-    **Example**
-
-    .. code-block:: json
-
-       { "actor": "pingdom.Unpause",
-         "desc": "Run unpause",
-         "options": {
-           "name": "fill-in"
-         }
-       }
-
-    **Dry run**
-
-    Will assert that the check name exists, but not take any action on it.
-    """
+    Unpause a particular "check" on Pingdom."""
 
     @gen.coroutine
     def _execute(self):

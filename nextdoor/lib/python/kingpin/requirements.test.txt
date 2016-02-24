@@ -1,6 +1,5 @@
 nose
-mock==1.0.1
+mock
 pep8
 pyflakes
 coverage
-Sphinx

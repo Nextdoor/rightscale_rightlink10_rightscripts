@@ -12,18 +12,15 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.rightscale.api`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Base RightScale API Access Object.
+"""Base RightScale API Access Object.
 
 This package provides access to the RightScale API via Tornado-style
-`@gen.coroutine` wrapped methods. These methods are, however, just wrappers
+@gen.coroutine wrapped methods. These methods are, however, just wrappers
 for threads that are being fired off in the background to make the API
 calls.
 
-**Async vs Threads**
+
+## Async vs Threads
 
 In the future, this will get re-factored to use a native Tornado
 AsyncHTTPClient object. The methods themselves will stay the same, but the
@@ -35,7 +32,7 @@ operations that the RightScale Actor objects need to do. Operations like
 one-to-one mapping of the RightScale API, but rather a mapping of conceptual
 operations that the Actors need.
 
-**Method Design Note**
+## Method Design Note
 
 RightScale mixes and matches their API calls... some of them you pass in a
 major method and then supply a resource ID to act on. Others you pass in the
@@ -60,7 +57,6 @@ import rightscale
 import simplejson
 
 from kingpin import utils
-from kingpin.actors.rightscale import settings
 
 log = logging.getLogger(__name__)
 
@@ -123,7 +119,6 @@ class RightScale(object):
         return int(path.split(resource.self.path)[-1])
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
     @utils.exception_logger
     def find_server_arrays(self, name, exact=True):
         """Search for a list of ServerArray by name and return the resources.
@@ -153,20 +148,6 @@ class RightScale(object):
         log.debug('Got ServerArray(s): %s' % ', '.join(names))
 
         return found_arrays
-
-    @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
-    @utils.exception_logger
-    def show(self, resource):
-        """Async wrapping of <resource>.show() with retry wrapper.
-
-        Args:
-            resource: rightscale.Resource object
-
-        Returns:
-            <rightscale.Resource object>.show()
-        """
-        return resource.show()
 
     @concurrent.run_on_executor
     @utils.exception_logger
@@ -201,7 +182,6 @@ class RightScale(object):
         return recipe
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
     @utils.exception_logger
     def find_right_script(self, name):
         """Search for a RightScript by-name and return the resource.
@@ -223,70 +203,6 @@ class RightScale(object):
         log.debug('Got RightScript: %s' % found_script)
 
         return found_script
-
-    @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
-    @utils.exception_logger
-    def find_by_name_and_keys(self, collection, exact=True, **kwargs):
-        """Search for a RightScale resource by name, and optional keys.
-
-        This code is blatently stolen from rightscale.util.find_by_name and
-        just re-worked so that we can search with the subject_href.
-        RightScale deliberately clones AlertSpecs all of the place. For our
-        purposes, searching with the subject_href becomes a requirement to
-        avoid complex scenarios where we may return the wrong AlertSpec.
-
-        Args:
-            collection: RightScale.<xxx> resource object
-            exact: If True, returns the first match. If False, returns a list
-                of all returned resources.
-            **kwargs: Any additional keys-and-values to use in the search.
-
-        Returns:
-            One RightScale Resource Object or a List of objects.
-        """
-        filter_keys = []
-        for key, val in kwargs.items():
-            filter_keys.append('%s==%s' % (key, val))
-        params = {'filter[]': sorted(filter_keys)}
-
-        found = collection.index(params=params)
-        if not exact and len(found) > 0:
-            return found
-
-        if len(found) < 1:
-            return []
-
-        if len(found) == 1:
-            return found[0]
-
-        return found
-
-    @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
-    @utils.exception_logger
-    def destroy_resource(self, res):
-        """Destroy an RightScale resource.
-
-        Args:
-            res: Resource object to destroy
-        """
-        return res.self.destroy()
-
-    @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
-    @utils.exception_logger
-    def create_resource(self, res, params):
-        """Create an RightScale resource.
-
-        Args:
-            res: Resource object to destroy
-            params: Dict of RightScale parameters to pass in
-
-        Returns:
-            The Rightscale Resource itself
-        """
-        return res.create(params=params)
 
     @concurrent.run_on_executor
     @utils.exception_logger
@@ -328,18 +244,16 @@ class RightScale(object):
 
     @concurrent.run_on_executor
     @utils.exception_logger
-    def update(self, resource, params):
-        """Updates a RightScale resource with the supplied parameters.
+    def update_server_array(self, array, params):
+        """Updates a ServerArray with the supplied parameters.
 
         Valid parameters can be found at the following URL:
 
             http://reference.rightscale.com/api1.5/resources/
             ResourceServerArrays.html#update
-            http://reference.rightscale.com/api1.5/resources/
-            ResourceInstances.html#update
 
         Args:
-            resource: rightscale.Resource object to update.
+            array: rightscale.Resource object to update.
             params: The parameters to update. eg:
                 { 'server_array[name]': 'new name' }
 
@@ -347,11 +261,11 @@ class RightScale(object):
             <updated rightscale array object>
         """
 
-        log.debug('Patching %s with new params: %s' %
-                  (resource.soul['name'], params))
-        resource.self.update(params=params)
-        updated_resource = resource.self.show()
-        return updated_resource
+        log.debug('Patching ServerArray (%s) with new params: %s' %
+                  (array.soul['name'], params))
+        array.self.update(params=params)
+        updated_array = array.self.show()
+        return updated_array
 
     @concurrent.run_on_executor
     @utils.exception_logger
@@ -399,7 +313,9 @@ class RightScale(object):
         next_inst.inputs.multi_update(params=inputs)
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
+    @sync_retry(stop_max_attempt_number=10,
+                wait_exponential_multiplier=5000,
+                wait_exponential_max=60000)
     @utils.exception_logger
     def launch_server_array(self, array, count=1):
         """Launches an instance of a ServerArray..
@@ -439,7 +355,9 @@ class RightScale(object):
             res_id=array_id, params=params)
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
+    @sync_retry(stop_max_attempt_number=10,
+                wait_exponential_multiplier=1000,
+                wait_exponential_max=10000)
     @utils.exception_logger
     def get_server_array_current_instances(
             self, array, filters=['state<>terminated']):
@@ -603,7 +521,9 @@ class RightScale(object):
         raise gen.Return(status)
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
+    @sync_retry(stop_max_attempt_number=20,
+                wait_exponential_multiplier=1000,
+                wait_exponential_max=10000)
     @utils.exception_logger
     def _get_task_info(self, task):
         """Fetch data for a particular RightScale task.
@@ -614,7 +534,9 @@ class RightScale(object):
         return task.self.show()
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
+    @sync_retry(stop_max_attempt_number=10,
+                wait_exponential_multiplier=5000,
+                wait_exponential_max=60000)
     @utils.exception_logger
     def get_audit_logs(self, instance, start, end, match=None):
         """Fetch a set of audit logs belonging to an instance.
@@ -754,7 +676,9 @@ class RightScale(object):
         raise gen.Return(yielded_tasks)
 
     @concurrent.run_on_executor
-    @sync_retry(**settings.RETRYING_SETTINGS)
+    @sync_retry(stop_max_attempt_number=3,
+                wait_exponential_multiplier=1000,
+                wait_exponential_max=10000)
     def make_generic_request(self, url, post=None):
         """Make a generic API call and return a Resource Object.
 
@@ -770,7 +694,7 @@ class RightScale(object):
             post: Optional POST Body Data
 
         Returns:
-            <rightscale.Resource objects>
+            <rightscale.Resource object>
         """
         # Make the initial web call
         log.debug('Making generic API call: %s (%s)' % (url, post))

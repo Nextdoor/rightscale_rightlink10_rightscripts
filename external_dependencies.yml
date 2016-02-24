@@ -4,7 +4,7 @@ repos:
   kingpin:
     type: git
     source: https://github.com/nextdoor/kingpin
-    ref: master
+    ref: v0.2.6
     destination: ./nextdoor/lib/python/kingpin
 
   storage-scripts:

@@ -1,40 +1,3 @@
-## Version 0.3.0
-
-Big release with a ton of bug fixes, several new actors, and actor enhancements.
-
-### Bug-fixes/Improvements
-
-  * Patches to the python-rightscale library now properly support actors that
-    take longer than 2 hours to execute.
-  * Properly support RightScale "Array" values when updating RightScale objects.
-  * Properly handle PackageCloud.io interactions that take longer than 30s
-
-### New Actors
-
-  * `rightscale.alerts.Create` and `rightscale.alerts.Destroy`
-  * `rightscale.deployment.Create` and `rightscale.deployment.Destroy`
-  * `rightscale.server_array.UpdateNextInstance`
-  * `packagecloud.Delete`, `packagecloud.DeleteByDate` and
-    `packagecloud.WaitForPackage`
-  * `pingdom.check.Pause`
-
-### Big new feature: `concurrency: X`
-
-The `group.Async` actor can now limit the concurrency so that no more than a
-certain number of actors execute at once. This is useful if you have a mass
-amount of actors defined inside your `Async` group, but want to limit the
-number of them that are running at any one time.
-
-### Concurrency also on the `rightscale.server_array.Execute` actor!
-
-You can also pass in a `concurrency` setting to the RightScale `Execute` actor
-and limit the number of concurrent executions of your RightScript!
-
-### Big new improvement: ReadTheDocs!
-
-We have completely re-vamped the documentation so that its built and published
-to the ReadTheDocs service at http://kingpin.readthedocs.org.
-
 ## Version 0.2.6
 
 Mostly a bug-fix release. Sigificant work went into improving the AWS actor reliability though.
@@ -163,12 +126,12 @@ please see [v0.1.2...v0.2.0].
 
 ### New Concepts
 
-*[Conditional Execution](README.rst#conditional-execution)*:
+*[Conditional Execution](README.md#conditional-execution)*:
 Make any actor or group of actors execution conditional based on a token that
 you've supplied. Allows you to easily turn on and off sections of your
 deployment like switches.
 
-*[Contextual Tokens](README.rst#contextual-tokens)*:
+*[Contextual Tokens](README.md#contextual-tokens)*:
 Now we have a model for a new type of token-replacement in the JSON files that
 can be used to change tokens at or during run time. The initial usage of these
 tokens is in the `group.Sync` and `group.Async` actors where we have added a

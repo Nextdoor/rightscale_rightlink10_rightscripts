@@ -44,25 +44,6 @@ class TestActorRaises(base.BaseActor):
         raise exc
 
 
-class TestActorPopulate(base.BaseActor):
-
-    """Fake Actor for Tests"""
-
-    all_options = {
-        'object': (list, [], 'A list to append values.'),
-        'value': (object, True, 'Add this value to the object two times.'),
-    }
-
-    last_value = None
-
-    @gen.coroutine
-    def _execute(self):
-        self.option('object').append(self.option('value'))
-        yield gen.moment
-        self.option('object').append(self.option('value'))
-        raise gen.Return(None)
-
-
 class TestGroupActorBaseClass(testing.AsyncTestCase):
 
     def setUp(self, *args, **kwargs):
@@ -105,39 +86,6 @@ class TestBaseGroupActor(TestGroupActorBaseClass):
                       dict(self.actor_returns)]})
         ret = actor._build_actions()
         self.assertEquals(4, len(ret))
-
-    def test_build_actions_with_bad_context_file(self):
-        with self.assertRaises(exceptions.InvalidOptions):
-            group.BaseGroupActor(
-                'bad context',
-                {'acts': [],
-                 'contexts': {'file': 'no_such_file',
-                              'tokens': {}}
-                 }
-            )
-
-    def test_build_actions_with_context_file(self):
-        acts = [dict(self.actor_returns)]
-
-        with mock.patch.object(group.BaseGroupActor,
-                               '_build_action_group') as action_builder:
-            action_builder.return_value = acts
-            group.BaseGroupActor(
-                'ContextFile Actor',
-                {
-                    'acts': acts,
-                    'contexts': {
-                        'file': 'examples/test/context.json',
-                        'tokens': {'TOKEN_VALUE': 'tadaa'}
-                    }
-                },
-                init_context={'init': 'stuff'})
-
-        self.assertEquals(2, len(action_builder.mock_calls))
-        action_builder.assert_has_calls([
-            mock.call(context={'init': 'stuff', 'key': 'value1'}),
-            mock.call(context={'init': 'stuff', 'key': 'tadaa'})
-        ])
 
     def test_build_actions_with_contexts(self):
         acts = [dict(self.actor_returns),
@@ -336,48 +284,18 @@ class TestAsyncGroupActor(TestGroupActorBaseClass):
     @testing.gen_test
     def test_execute_async(self):
         """Make sure this actor starts all processes in parallel!"""
-        check_order = []
-        actor_1 = {'actor': 'kingpin.actors.test.test_group.TestActorPopulate',
-                   'desc': 'test',
-                   'options': {
-                       'object': ['fake'],
-                       'value': 1}}
-        actor_2 = {'actor': 'kingpin.actors.test.test_group.TestActorPopulate',
-                   'desc': 'test',
-                   'options': {
-                       'object': ['fake'],
-                       'value': 2}}
-        actor = group.Async(
-            'Unit Test Action',
-            {
-                'acts': [actor_1, actor_2]
-            })
-
-        # The options above were copied by value
-        # This test requires same object to be modified so we set it directly
-        actor._actions[0]._options['object'] = check_order
-        actor._actions[1]._options['object'] = check_order
-
-        yield actor.execute()
-
-        # if the actions above were executed sequentially then the resulting
-        # list would be [1,1,2,2] and here we know it's hopping between actors
-        self.assertEquals(check_order, [1, 2, 1, 2])
-
-    @testing.gen_test
-    def test_execute_concurrent(self):
         sleeper = {'actor': 'misc.Sleep',
                    'desc': 'Sleep',
                    'options': {'sleep': 0.1}}
-        actor = group.Async('Unit Test Action', {
-            'concurrency': 2,
-            'acts': [sleeper, sleeper, sleeper, sleeper]})
+        actor = group.Async('Unit Test Action', {'acts': [
+            sleeper, sleeper, sleeper]})
 
         start = time.time()
         yield actor.execute()
         stop = time.time()
         exe_time = stop - start
-        self.assertTrue(0.2 < exe_time < 0.4)
+        # Parallel execution of sleep should not take 3x as long!
+        self.assertTrue(0.1 < exe_time < 0.3)
 
     @testing.gen_test
     def test_run_actions_with_two_acts(self):

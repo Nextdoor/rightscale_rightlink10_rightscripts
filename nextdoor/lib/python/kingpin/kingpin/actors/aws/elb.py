@@ -12,10 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.aws.elb`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-"""
+"""AWS.ELB Actors"""
 
 import logging
 import math
@@ -69,60 +66,7 @@ class ELBBaseActor(base.AWSBaseActor):
 
 class WaitUntilHealthy(ELBBaseActor):
 
-    """Wait indefinitely until a specified ELB is considered "healthy".
-
-    This actor will loop infinitely until a healthy threshold of the ELB is
-    met.  The threshold can be reached when the ``count`` as specified in the
-    options is less than or equal to the number of InService instances in the
-    ELB.
-
-    Another situation is for ``count`` to be a string specifying a percentage
-    (see examples). In this case the percent of InService instances has to be
-    greater than the ``count`` percentage.
-
-    **Options**
-
-    :name:
-      The name of the ELB to operate on
-
-    :count:
-      Number, or percentage of InService instance to consider this ELB healthy
-
-    :region:
-      AWS region (or zone) name, such as us-east-1 or us-west-2
-
-    **Examples**
-
-    .. code-block:: json
-
-       { "actor": "aws.elb.WaitUntilHealthy",
-         "desc": "Wait until production-frontend has 16 hosts",
-         "options": {
-           "name": "production-frontend",
-           "count": 16,
-           "region": "us-west-2"
-         }
-       }
-
-    .. code-block:: json
-
-       { "actor": "aws.elb.WaitUntilHealthy",
-         "desc": "Wait until production-frontend has 85% of hosts in-service",
-         "options": {
-           "name": "production-frontend",
-           "count": "85%",
-           "region": "us-west-2"
-         }
-       }
-
-    **Dry Mode**
-
-    This actor performs the finding of the ELB as well as calculating its
-    health at all times. The only difference in dry mode is that it will not
-    re-count the instances if the ELB is not healthy. A log message will be
-    printed indicating that the run is dry, and the actor will exit with
-    success.
-    """
+    """Waits till a specified number of instances are "InService"."""
 
     def _get_expected_count(self, count, total_count):
         """Calculate the expected count for a given percentage.
@@ -212,41 +156,7 @@ class WaitUntilHealthy(ELBBaseActor):
 
 class SetCert(ELBBaseActor):
 
-    """Find a server cert in IAM and use it for a specified ELB.
-
-    **Options**
-
-    :region:
-      (str) AWS region (or zone) name, like us-west-2
-
-    :name:
-      (str) Name of the ELB
-
-    :cert_name:
-      (str) Unique IAM certificate name, or ARN
-
-    :port:
-      (int) Port associated with the cert.
-      (default: 443)
-
-    **Example**
-
-    .. code-block:: json
-
-       { "actor": "aws.elb.SetCert",
-         "desc": "Run SetCert",
-         "options": {
-           "cert_name": "new-cert",
-           "name": "some-elb",
-           "region": "us-west-2"
-         }
-       }
-
-    **Dry run**
-
-    Will check that ELB and Cert names are existent, and will also check that
-    the credentials provided for AWS have access to the new cert for ssl.
-    """
+    """Find a server cert in IAM and use it for a specified ELB."""
 
     all_options = {
         'name': (str, REQUIRED, 'Name of the ELB'),
@@ -369,36 +279,8 @@ class RegisterInstance(base.AWSBaseActor):
 
     """Add an EC2 instance to a load balancer.
 
-    **Options**
-
-    :elb:
-      (str) Name of the ELB
-
-    :instances:
-      (str, list) Instance id, or list of ids. Default "self" id.
-
-    :region:
-      (str) AWS region (or zone) name, like us-west-2
-
-    :enable_zones:
-      (bool) add all available AZ to the elb. Default: True
-
-    **Example**
-
-    .. code-block:: json
-
-       { "actor": "aws.elb.RegisterInstance",
-         "desc": "Run RegisterInstance",
-         "options": {
-           "elb": "prod-loadbalancer",
-           "instances": "i-123456",
-           "region": "us-east-1",
-         }
-       }
-
-    **Dry run**
-
-    Will find the specified ELB, but not take any actions regarding instances.
+    http://boto.readthedocs.org/en/latest/ref/elb.html
+    #boto.ec2.elb.ELBConnection.register_instances
     """
 
     all_options = {
@@ -407,7 +289,7 @@ class RegisterInstance(base.AWSBaseActor):
         'instances': ((str, list), None, (
             'Instance id, or list of ids. If no value is specified then '
             'the instance id of the executing machine is used.')),
-        'enable_zones': ((str, bool), True, 'Enable all zones for this ELB.')
+        'enable_zones': (bool, True, 'Enable all zones for this ELB.')
     }
 
     @gen.coroutine
@@ -453,7 +335,7 @@ class RegisterInstance(base.AWSBaseActor):
             yield self._add(elb, instances)
             self.log.info('Done.')
 
-            if self.str2bool(self.option('enable_zones')):
+            if self.option('enable_zones'):
                 yield self._check_elb_zones(elb)
 
 
@@ -461,49 +343,8 @@ class DeregisterInstance(base.AWSBaseActor):
 
     """Remove EC2 instance(s) from an ELB.
 
-    **Options**
-
-    :elb:
-      (str) Name of the ELB. Optionally this may also be a `*`.
-
-    :instances:
-      (str, list) Instance id, or list of ids
-
-    :region:
-      (str) AWS region (or zone) name, like us-west-2
-
-    :wait_on_draining:
-      (bool) Whether or not to wait for connection draining
-
-    **Example**
-
-    .. code-block:: json
-
-       { "actor": "aws.elb.DeregisterInstance",
-         "desc": "Run DeregisterInstance",
-         "options": {
-           "elb": "my-webserver-elb",
-           "instances": "i-abcdeft",
-           "region": "us-west-2"
-         }
-       }
-
-    Extremely simple way to remove the local instance running this code from
-    all ELBs its been joined to:
-
-    .. code-block:: json
-
-       { "actor": "aws.elb.DeregisterInstance",
-         "desc": "Run DeregisterInstance",
-         "options": {
-           "elb": "*",
-           "region": "us-west-2"
-         }
-       }
-
-    **Dry run**
-
-    Will find the ELB but not take any actions regarding the instances.
+    http://boto.readthedocs.org/en/latest/ref/elb.html
+    #boto.ec2.elb.loadbalancer.LoadBalancer.deregister_instances
     """
 
     all_options = {
@@ -511,10 +352,7 @@ class DeregisterInstance(base.AWSBaseActor):
         'region': (str, REQUIRED, 'AWS region (or zone) name, like us-west-2'),
         'instances': ((str, list), None, (
             'Instance id, or list of ids. If no value is specified then '
-            'the instance id of the executing machine is used.')),
-        'wait_on_draining': ((str, bool), True, (
-            'Whether or not to wait for the ELB to drain connections '
-            'before returning from the actor.'))
+            'the instance id of the executing machine is used.'))
     }
 
     @gen.coroutine
@@ -525,65 +363,11 @@ class DeregisterInstance(base.AWSBaseActor):
             elb: boto Loadbalancer object
             instances: list of instance ids.
         """
-        self.log.info(('Removing instances from %s: %s'
-                      % (elb, ', '.join(instances))))
-
-        if not self._dry:
-            yield self.thread(elb.deregister_instances, instances)
-            yield self._wait_on_draining(elb)
-            self.log.info('Done.')
-
-    @gen.coroutine
-    def _wait_on_draining(self, elb):
-        """Waits for the ELB Connection Draining to occur.
-
-        ELB Connection Draining is a configured-setting on the ELB that will
-        continue to allow existing connections to be handeled before finally
-        cutting them off at the timeout. This method will detect if connection
-        draining is enabled, and optionally "sleep" for that time period before
-        returning from the actor.
-
-        Args:
-            elb: boto Loadbalancer object
-        """
-        if not self.str2bool(self.option('wait_on_draining')):
-            self.log.warning('Not waiting for connections to drain!')
-
-        attrs = yield self.thread(elb.get_attributes)
-        if attrs.connection_draining.enabled:
-            timeout = attrs.connection_draining.timeout
-
-            self.log.info('Connection Draining Enabled, waiting %s(s)'
-                          % timeout)
-            yield utils.tornado_sleep(timeout)
-
-    @gen.coroutine
-    def _find_instance_elbs(self, instances):
-        """Finds all ELBs that Instances are members of.
-
-        Searches through all of the ELBs in a particular region and looks for
-        which ones have any of the instances supplied in them. Creates a list
-        of the ELBs, and returns the entire list.
-
-        Args:
-            instances: A list of Instance IDs
-
-        Returns:
-            a list of LoadBalancer objects
-        """
-        all_elbs = yield self.thread(self.elb_conn.get_all_load_balancers)
-        elbs_with_members = []
-
-        for instance in instances:
-            elbs = filter(lambda lb: instance in [i.id for i in lb.instances],
-                          all_elbs)
-            self.log.debug('%s is a member of %s' % (instance, elbs))
-            elbs_with_members.extend(elbs)
-
-        raise gen.Return(elbs_with_members)
+        yield self.thread(elb.deregister_instances, instances)
 
     @gen.coroutine
     def _execute(self):
+        elb = yield self._find_elb(self.option('elb'))
         instances = self.option('instances')
 
         if not instances:
@@ -595,14 +379,8 @@ class DeregisterInstance(base.AWSBaseActor):
         if type(instances) is not list:
             instances = [instances]
 
-        if self.option('elb') == '*':
-            elbs = yield self._find_instance_elbs(instances)
-        else:
-            elb = yield self._find_elb(self.option('elb'))
-            elbs = [elb]
-
-        tasks = []
-        for elb in elbs:
-            tasks.append(self._remove(elb, instances))
-
-        yield tasks
+        self.log.info(('Removing the following instances from elb: '
+                       '%s' % ', '.join(instances)))
+        if not self._dry:
+            yield self._remove(elb, instances)
+            self.log.info('Done.')

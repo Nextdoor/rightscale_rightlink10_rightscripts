@@ -1,6 +1,5 @@
 import logging
 import mock
-import time
 
 from tornado import testing
 from tornado import gen
@@ -28,6 +27,77 @@ class TestServerArrayBaseActor(testing.AsyncTestCase):
         # Patch the actor so that we use the client mock
         self.client_mock = mock.MagicMock()
         self.actor._client = self.client_mock
+
+    @testing.gen_test
+    def test_find_server_arrays_with_bad_raise_on(self):
+        with self.assertRaises(exceptions.ActorException):
+            yield self.actor._find_server_arrays('t', raise_on='bogus')
+
+    @testing.gen_test
+    def test_find_server_arrays_dry_not_found(self):
+        self.client_mock.find_server_arrays = mock_tornado(None)
+
+        self.actor._dry = True
+
+        # With allow_mock enabled, we should receive a mock back
+        ret = yield self.actor._find_server_arrays('t', allow_mock=True)
+        self.assertTrue(isinstance(ret, mock.MagicMock))
+
+        # With it set to false, we should raise an exception
+        with self.assertRaises(exceptions.ActorException):
+            yield self.actor._find_server_arrays('t', allow_mock=False)
+
+    @testing.gen_test
+    def test_find_server_arrays_found(self):
+        mocked_array = mock.MagicMock(name='mocked array')
+
+        mock_find = mock_tornado(mocked_array)
+        self.client_mock.find_server_arrays = mock_find
+
+        # If the array is found, but we don't want it found, it should
+        # raise an exception.
+        with self.assertRaises(exceptions.ActorException):
+            yield self.actor._find_server_arrays('t', raise_on='found')
+
+        # If the array is found, and we DO want it found, it should be
+        # returned properly.
+        ret = yield self.actor._find_server_arrays('t', raise_on='notfound')
+        self.assertEquals(mocked_array, ret)
+
+        # Lastly, if the array is found and we we don't care whether its
+        # found or not, it should be returned
+        ret = yield self.actor._find_server_arrays('t', raise_on=None)
+        self.assertEquals(mocked_array, ret)
+
+    @testing.gen_test
+    def test_find_server_arrays_many_returned(self):
+        mocked_array1 = mock.MagicMock(name='mocked array1')
+        mocked_array2 = mock.MagicMock(name='mocked array2')
+
+        mock_find = mock_tornado([mocked_array1, mocked_array2])
+        self.client_mock.find_server_arrays = mock_find
+
+        ret = yield self.actor._find_server_arrays('t', raise_on='notfound')
+        self.assertEquals([mocked_array1, mocked_array2], ret)
+
+    @testing.gen_test
+    def test_find_server_arrays_not_found(self):
+        self.client_mock.find_server_arrays = mock_tornado()
+
+        # If the array is not found, but we do want it found, it should
+        # raise an exception.
+        with self.assertRaises(exceptions.ActorException):
+            yield self.actor._find_server_arrays('t', raise_on='notfound')
+
+        # If the array is not found, and we don't want it found, it should
+        # return properly.
+        ret = yield self.actor._find_server_arrays('t', raise_on='found')
+        self.assertEquals(None, ret)
+
+        # Lastly, if the array is not found and we don't care whether its
+        # found or not, None should be returned
+        ret = yield self.actor._find_server_arrays('t', raise_on=None)
+        self.assertEquals(None, ret)
 
     @testing.gen_test
     def test_apply(self):
@@ -85,7 +155,7 @@ class TestCloneActor(testing.AsyncTestCase):
         new_array.self.path = '/foo/bar/124'
         self.client_mock.clone_server_array = mock_tornado(new_array)
 
-        self.client_mock.update = mock_tornado()
+        self.client_mock.update_server_array = mock_tornado()
 
         ret = yield self.actor.execute()
         self.assertEquals(None, ret)
@@ -98,7 +168,7 @@ class TestCloneActor(testing.AsyncTestCase):
         source_array.self.path = '/fo/bar/123'
         self.actor._find_server_arrays = mock_tornado(source_array)
 
-        self.client_mock.update = mock_tornado()
+        self.client_mock.update_server_array = mock_tornado()
 
         ret = yield self.actor.execute()
         self.assertEquals(None, ret)
@@ -156,17 +226,17 @@ class TestUpdateActor(testing.AsyncTestCase):
         self.actor._check_array_inputs = mock_tornado(True)
         self.actor._find_server_arrays = mock_tornado(mocked_array)
 
-        self.client_mock.update.return_value = tornado_value(None)
+        self.client_mock.update_server_array.return_value = tornado_value(None)
 
         self.client_mock.update_server_array_inputs.return_value = (
             tornado_value(None))
 
         ret = yield self.actor.execute()
 
-        self.client_mock.update.assert_called_once_with(
-            mocked_array, [('server_array[name]', 'newunitarray')])
+        self.client_mock.update_server_array.assert_called_once_with(
+            mocked_array, {'server_array[name]': 'newunitarray'})
         self.client_mock.update_server_array_inputs.assert_called_once_with(
-            mocked_array, [('inputs[test]', 'text:test')])
+            mocked_array, {'inputs[test]': 'text:test'})
 
         self.assertEquals(None, ret)
 
@@ -187,44 +257,6 @@ class TestUpdateActor(testing.AsyncTestCase):
         self.assertEquals(0, mocked_array.call_count)
 
     @testing.gen_test
-    def test_execute_500_error_raises_exc(self):
-        mocked_array = mock.MagicMock(name='unittestarray')
-
-        self.actor._check_array_inputs = mock_tornado(True)
-        self.actor._find_server_arrays = mock_tornado(mocked_array)
-
-        msg = '500 : Unknown error'
-        mocked_response = mock.MagicMock(name='response')
-        mocked_response.status_code = 500
-        error = requests.exceptions.HTTPError(msg, response=mocked_response)
-        self.client_mock.update.side_effect = error
-
-        with self.assertRaises(exceptions.ActorException):
-            yield self.actor.execute()
-
-        self.client_mock.update.assert_called_once_with(
-            mocked_array, [('server_array[name]', 'newunitarray')])
-
-    @testing.gen_test
-    def test_execute_400_error(self):
-        mocked_array = mock.MagicMock(name='unittestarray')
-
-        self.actor._check_array_inputs = mock_tornado(True)
-        self.actor._find_server_arrays = mock_tornado(mocked_array)
-
-        msg = '400 Client Error: Bad Request'
-        mocked_response = mock.MagicMock(name='response')
-        mocked_response.status_code = 400
-        error = requests.exceptions.HTTPError(msg, response=mocked_response)
-        self.client_mock.update.side_effect = error
-
-        with self.assertRaises(exceptions.RecoverableActorFailure):
-            yield self.actor.execute()
-
-        self.client_mock.update.assert_called_once_with(
-            mocked_array, [('server_array[name]', 'newunitarray')])
-
-    @testing.gen_test
     def test_execute_422_error(self):
         mocked_array = mock.MagicMock(name='unittestarray')
 
@@ -235,196 +267,13 @@ class TestUpdateActor(testing.AsyncTestCase):
         mocked_response = mock.MagicMock(name='response')
         mocked_response.status_code = 422
         error = requests.exceptions.HTTPError(msg, response=mocked_response)
-        self.client_mock.update.side_effect = error
+        self.client_mock.update_server_array.side_effect = error
 
         with self.assertRaises(exceptions.RecoverableActorFailure):
             yield self.actor.execute()
 
-        self.client_mock.update.assert_called_once_with(
-            mocked_array, [('server_array[name]', 'newunitarray')])
-
-    @testing.gen_test
-    def test_execute_dry(self):
-        self.actor._dry = True
-        mocked_array = mock.MagicMock(name='fake array')
-        mocked_array.soul = {'name': 'mocked-array'}
-        mocked_array.self.path = '/a/b/1234'
-
-        self.actor._check_array_inputs = mock_tornado(True)
-        self.actor._find_server_arrays = mock_tornado(mocked_array)
-
-        ret = yield self.actor.execute()
-        self.assertEquals(None, ret)
-
-    @testing.gen_test
-    def test_execute_dry_with_missing_array(self):
-        self.actor._dry = True
-        mocked_array = mock.MagicMock(name='unittestarray')
-        mocked_array.soul = {'name': 'unittestarray'}
-
-        self.actor._check_array_inputs = mock_tornado(True)
-        self.actor._find_server_arrays = mock_tornado(mocked_array)
-
-        ret = yield self.actor.execute()
-        self.assertEquals(None, ret)
-
-
-class TestUpdateNextInstanceActor(testing.AsyncTestCase):
-
-    def setUp(self, *args, **kwargs):
-        super(TestUpdateNextInstanceActor, self).setUp()
-        base.TOKEN = 'unittest'
-
-        # Create the actor
-        self.actor = server_array.UpdateNextInstance(
-            'Patch',
-            {'array': 'unittestarray',
-                'params': {'image_href': 'default'}})
-
-        # Patch the actor so that we use the client mock. Save the real
-        # "client" object because its actually used during a unit test.
-        self.client_mock = mock.MagicMock()
-        self.actor._orig_client = self.actor._client
-        self.actor._client = self.client_mock
-
-        # Validate that the actor._params were saved properly the first time
-        # and that the 'image_href' was not modified.
-        self.assertEquals(
-            self.actor._params, [(u'instance[image_href]', u'default')])
-
-    @testing.gen_test
-    def test_update_params(self):
-        # Mock out our array object, and the next_instance. Then mock out the
-        # api.show() method to return the mocked instance. Verify that the
-        # right calls were made to the API though.
-        mocked_array = mock.MagicMock(name='unittestarray')
-        mocked_instance = mock.MagicMock(name='nextinstance')
-        self.actor._find_def_image_href = mock_tornado('fake_href')
-        self.actor._client.show.side_effect = mock_tornado(mocked_instance)
-        self.actor._client.update.side_effect = mock_tornado(True)
-
-        yield self.actor._update_params(mocked_array)
-
-        self.client_mock.show.assert_has_calls([
-            mock.call(mocked_array.next_instance),
-        ])
-        self.client_mock.update.assert_has_calls([
-            mock.call(mocked_instance, [('instance[image_href]', 'fake_href')])
-        ])
-
-    @testing.gen_test
-    def test_update_params_400_error(self):
-        # Mock out our array object, and the next_instance. Then mock out the
-        # api.show() method to return the mocked instance. Verify that the
-        # right calls were made to the API though.
-        mocked_array = mock.MagicMock(name='unittestarray')
-        mocked_instance = mock.MagicMock(name='nextinstance')
-        self.actor._find_def_image_href = mock_tornado('fake_href')
-        self.actor._client.show.side_effect = mock_tornado(mocked_instance)
-
-        msg = '400 Client Error: Bad Request'
-        mocked_response = mock.MagicMock(name='response')
-        mocked_response.status_code = 400
-        error = requests.exceptions.HTTPError(msg, response=mocked_response)
-        self.client_mock.update.side_effect = error
-
-        with self.assertRaises(exceptions.RecoverableActorFailure):
-            yield self.actor._update_params(mocked_array)
-
-    @testing.gen_test
-    def test_update_params_422_error(self):
-        # Mock out our array object, and the next_instance. Then mock out the
-        # api.show() method to return the mocked instance. Verify that the
-        # right calls were made to the API though.
-        mocked_array = mock.MagicMock(name='unittestarray')
-        mocked_instance = mock.MagicMock(name='nextinstance')
-        self.actor._find_def_image_href = mock_tornado('fake_href')
-        self.actor._client.show.side_effect = mock_tornado(mocked_instance)
-
-        msg = '422 Client Error: Unprocessable Entity'
-        mocked_response = mock.MagicMock(name='response')
-        mocked_response.status_code = 422
-        error = requests.exceptions.HTTPError(msg, response=mocked_response)
-        self.client_mock.update.side_effect = error
-
-        with self.assertRaises(exceptions.RecoverableActorFailure):
-            yield self.actor._update_params(mocked_array)
-
-    @testing.gen_test
-    def test_update_params_500_error(self):
-        # Mock out our array object, and the next_instance. Then mock out the
-        # api.show() method to return the mocked instance. Verify that the
-        # right calls were made to the API though.
-        mocked_array = mock.MagicMock(name='unittestarray')
-        mocked_instance = mock.MagicMock(name='nextinstance')
-        self.actor._find_def_image_href = mock_tornado('fake_href')
-        self.actor._client.show.side_effect = mock_tornado(mocked_instance)
-
-        msg = '500 Unknown Error'
-        mocked_response = mock.MagicMock(name='response')
-        mocked_response.status_code = 500
-        error = requests.exceptions.HTTPError(msg, response=mocked_response)
-        self.client_mock.update.side_effect = error
-
-        with self.assertRaises(requests.exceptions.HTTPError):
-            yield self.actor._update_params(mocked_array)
-
-    @testing.gen_test
-    def test_find_def_image_href(self):
-        # Mock up the final 'MCI Settings' objets that we'll be sorting through
-        # looking for a matching 'cloud' HREF.
-        mock_setting_1 = mock.MagicMock(name='setting1')
-        mock_setting_1.cloud.path = '/cloud/1'
-        mock_setting_1.soul = {}  # no links.. this would fail if called
-        mock_setting_2 = mock.MagicMock(name='setting2')
-        mock_setting_2.cloud.path = '/cloud/2'
-        mock_setting_2.soul = {
-            'links': [
-                {'rel': 'foo', 'href': '/foo'},
-                {'rel': 'image', 'href': '/test/image'},
-            ]
-        }
-
-        # Mock up a single MCI object that returns the above settings objects
-        mocked_mci = mock.MagicMock(name='mci')
-        mocked_mci.settings.show.return_value = [
-            mock_setting_1,
-            mock_setting_2
-        ]
-
-        # Finally, mock out an instance thats using our above template.
-        mocked_instance = mock.MagicMock(name='nextinstance')
-        mocked_instance.soul = {'name': 'nextinstance'}
-        mocked_instance.cloud.path = '/cloud/2'
-        mocked_instance.multi_cloud_image.show.return_value = mocked_mci
-
-        # For ease of testing, we put the real RightScale Client API object
-        # back in place and use its show() method for real. Our mocks above
-        # ensure that we don't make any real API calls.
-        self.actor._client = self.actor._orig_client
-
-        # Execute the method
-        ret = yield self.actor._find_def_image_href(mocked_instance)
-        # Did we ultimatley get back /test/image?
-        self.assertEquals('/test/image', ret)
-
-        # Second test -- written inline with the first test to avoid the
-        # massive setup process above.
-        mocked_instance.cloud.path = '/cloud/1'
-        with self.assertRaises(server_array.InvalidInputs):
-            yield self.actor._find_def_image_href(mocked_instance)
-
-    @testing.gen_test
-    def test_execute(self):
-        self.actor._dry = False
-        mocked_array = mock.MagicMock(name='unittestarray')
-
-        self.actor._update_params = mock_tornado(True)
-        self.actor._find_server_arrays = mock_tornado(mocked_array)
-
-        ret = yield self.actor.execute()
-
-        self.assertEquals(None, ret)
+        self.client_mock.update_server_array.assert_called_once_with(
+            mocked_array, {'server_array[name]': 'newunitarray'})
 
     @testing.gen_test
     def test_execute_dry(self):
@@ -540,11 +389,11 @@ class TestTerminateActor(testing.AsyncTestCase):
         array_mock = mock.MagicMock(name='unittest')
         array_mock.soul = {'name': 'unittest'}
         array_mock.self.path = '/a/b/1234'
-        self.client_mock.update.side_effect = mock_tornado()
+        self.client_mock.update_server_array.side_effect = mock_tornado()
 
         yield self.actor._disable_array(array_mock)
-        self.client_mock.update.assert_has_calls([
-            mock.call(array_mock, [('server_array[state]', 'disabled')])])
+        self.client_mock.update_server_array.assert_has_calls([
+            mock.call(array_mock, {'server_array[state]': 'disabled'})])
 
     @testing.gen_test
     def test_execute(self):
@@ -556,16 +405,16 @@ class TestTerminateActor(testing.AsyncTestCase):
         def update_array(array, params):
             array.updated(params)
 
-        self.client_mock.update.side_effect = update_array
+        self.client_mock.update_server_array.side_effect = update_array
         self.actor._terminate_all_instances = mock_tornado()
         self.actor._wait_until_empty = mock_tornado()
         ret = yield self.actor._execute()
 
         # Verify that the array object would have been patched
-        self.client_mock.update.assert_called_once_with(
-            initial_array,  [('server_array[state]', 'disabled')])
+        self.client_mock.update_server_array.assert_called_once_with(
+            initial_array,  {'server_array[state]': 'disabled'})
         initial_array.updated.assert_called_once_with(
-            [('server_array[state]', 'disabled')])
+            {'server_array[state]': 'disabled'})
 
         # Now verify that each of the steps (terminate, wait, destroyed) were
         # all called.
@@ -582,7 +431,7 @@ class TestTerminateActor(testing.AsyncTestCase):
         @gen.coroutine
         def update_array(array, params):
             array.updated(params)
-        self.client_mock.update.side_effect = update_array
+        self.client_mock.update_server_array.side_Effect = update_array
 
         # ensure that we never called the update_array method!
         yield self.actor._execute()
@@ -658,6 +507,21 @@ class TestLaunchActor(testing.AsyncTestCase):
 
     @testing.gen_test
     def test_requirements(self):
+
+        with self.assertRaises(exceptions.InvalidOptions):
+            # Missing enable and count flags
+            server_array.Launch(
+                'Unit test', {
+                    'array': 'unit test array',
+                })
+
+        with self.assertRaises(exceptions.InvalidOptions):
+            # Not enabling and missing count flag
+            server_array.Launch(
+                'Unit test', {
+                    'array': 'unit test array',
+                    'enable': False
+                })
 
         with self.assertRaises(exceptions.InvalidOptions):
             # Bad string passed in as count
@@ -739,7 +603,7 @@ class TestLaunchActor(testing.AsyncTestCase):
         yield self.actor._launch_instances(array_mock)
         self.assertEquals(1, self.client_mock.launch_server_array.call_count)
         self.client_mock.launch_server_array.assert_has_calls(
-            [mock.call(array_mock, count=4)])
+            mock.call(array_mock, count=4))
 
         # Regular function call with some servers already existing.
         self.client_mock.get_server_array_current_instances = mock_tornado([
@@ -747,7 +611,7 @@ class TestLaunchActor(testing.AsyncTestCase):
         self.client_mock.launch_server_array.reset_mock()
         yield self.actor._launch_instances(array_mock)
         self.client_mock.launch_server_array.assert_has_calls(
-            [mock.call(array_mock, count=2)])
+            mock.call(array_mock, count=2))
 
         # Regular function call more arrays than min_count
         self.client_mock.get_server_array_current_instances = mock_tornado([
@@ -771,14 +635,14 @@ class TestLaunchActor(testing.AsyncTestCase):
         def update_array(array, params):
             array.updated(params)
             raise gen.Return(updated_array)
-        self.client_mock.update.side_effect = update_array
+        self.client_mock.update_server_array.side_effect = update_array
 
         # Verify that the array object would have been patched
         yield self.actor._enable_array(initial_array)
-        self.client_mock.update.assert_called_once_with(
-            initial_array,  [('server_array[state]', 'enabled')])
+        self.client_mock.update_server_array.assert_called_once_with(
+            initial_array,  {'server_array[state]': 'enabled'})
         initial_array.updated.assert_called_once_with(
-            [('server_array[state]', 'enabled')])
+            {'server_array[state]': 'enabled'})
 
         # Reset for a dry run
         self.actor._dry = True
@@ -788,26 +652,6 @@ class TestLaunchActor(testing.AsyncTestCase):
         # Run it again, object shoudl NOT be updated.
         yield self.actor._enable_array(initial_array)
         self.assertEquals(initial_array.updated.call_count, 0)
-
-    @testing.gen_test
-    def test_disabled_no_launch(self):
-        self.actor._options['enable'] = False
-        self.actor._options['count'] = 0
-
-        mocked_array = mock.MagicMock(name='unittest')
-        mocked_array.soul = {'name': 'unittest'}
-        self.actor._find_server_arrays = mock_tornado(mocked_array)
-        self.actor._apply = mock.MagicMock(name='apply')
-        self.actor._apply.side_effect = mock_tornado()
-
-        yield self.actor._execute()
-
-        # Now verify that the right calls were made
-        self.actor._apply.assert_has_calls([
-            mock.call(self.actor._enable_array, mocked_array),
-            mock.call(self.actor._launch_instances, mocked_array, False),
-            mock.call(self.actor._wait_until_healthy, mocked_array),
-        ])
 
     @testing.gen_test
     def test_execte(self):
@@ -884,53 +728,6 @@ class TestExecuteActor(testing.AsyncTestCase):
         self.assertEquals(2, len(ret))
 
     @testing.gen_test
-    def test_exec_and_wait(self):
-        self.client_mock.run_executable_on_instances = mock_tornado(['test'])
-        self.client_mock.wait_for_task = mock_tornado('success-test')
-        ret = yield self.actor._exec_and_wait('', {}, [], 1)
-
-        self.assertEquals(ret, 'success-test')
-        self.assertEquals(
-            self.client_mock.run_executable_on_instances._call_count, 1)
-        self.assertEquals(self.client_mock.wait_for_task._call_count, 1)
-
-    @testing.gen_test
-    def test_execute_array_with_concurrency_dry(self):
-        self.actor._get_operational_instances = mock_tornado(['test'])
-        self.actor._dry = True
-        yield self.actor._execute_array_with_concurrency(
-            arrays='a4', inputs={})
-
-    @testing.gen_test
-    def test_execute_arrays_with_concurrency_dry(self):
-        self.actor._get_operational_instances = mock_tornado(['test'])
-        self.actor._dry = True
-        yield self.actor._execute_array_with_concurrency(
-            arrays=['a1', 'a2', 'a3', 'a4'], inputs={})
-
-    @testing.gen_test
-    def test_execute_array_with_concurrency(self):
-        self.actor._get_operational_instances = mock_tornado(['test'])
-
-        @gen.coroutine
-        def local_sleep(name, inputs, instance, sleep):
-            yield gen.sleep(.1)
-            raise gen.Return(True)
-
-        self.actor._exec_and_wait = local_sleep
-
-        self.actor._options['concurrency'] = 2
-        start = time.time()
-        yield self.actor._execute_array_with_concurrency(
-            arrays=['a1', 'a2', 'a3', 'a4'], inputs={})
-        stop = time.time()
-        exe_time = stop - start
-
-        # Execution should take at least .2 seconds, but not .3
-        self.assertTrue(.2 < exe_time < .3,
-                        "Bad exec time. Expected .2 < %s < .3" % exe_time)
-
-    @testing.gen_test
     def test_execute_array(self):
         mock_array = mock.MagicMock(name='array')
         mock_op_instance = mock.MagicMock(name='mock_instance')
@@ -991,21 +788,6 @@ class TestExecuteActor(testing.AsyncTestCase):
         self.assertEquals(ret, None)
 
     @testing.gen_test
-    def test_execute_concurrent(self):
-        mock_array = mock.MagicMock(name='array')
-        mock_array.soul = {'name': 'array'}
-        self.actor._options['concurrency'] = 2
-        self.actor._find_server_arrays = mock_tornado(mock_array)
-        self.actor._execute_array_with_concurrency = mock.MagicMock()
-        self.actor._execute_array_with_concurrency.side_effect = mock_tornado()
-
-        yield self.actor._execute()
-
-        self.actor._execute_array_with_concurrency.assert_has_calls([
-            mock.call(mock_array,
-                      [(u'inputs[foo]', u'text:bar')])])
-
-    @testing.gen_test
     def test_execute(self):
         mock_array = mock.MagicMock(name='array')
         mock_array.soul = {'name': 'array'}
@@ -1017,7 +799,7 @@ class TestExecuteActor(testing.AsyncTestCase):
         self.actor._apply.assert_has_calls([
             mock.call(self.actor._execute_array,
                       mock_array,
-                      [(u'inputs[foo]', u'text:bar')])])
+                      {u'inputs[foo]': u'text:bar'})])
 
     @testing.gen_test
     def test_execute_dry(self):
@@ -1031,7 +813,7 @@ class TestExecuteActor(testing.AsyncTestCase):
         yield self.actor._execute()
         self.actor._apply.assert_has_calls([
             mock.call(self.actor._execute_array,
-                      mock_array, [(u'inputs[foo]', u'text:bar')])
+                      mock_array, {u'inputs[foo]': u'text:bar'})
         ])
 
     @testing.gen_test

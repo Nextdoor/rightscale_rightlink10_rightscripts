@@ -66,13 +66,6 @@ class TestRightScale(testing.AsyncTestCase):
             self.assertEquals(None, ret)
 
     @testing.gen_test
-    def test_show(self):
-        mock_rsr = mock.MagicMock(name='resource')
-        mock_rsr.show.return_value = 1
-        ret = yield self.client.show(mock_rsr)
-        self.assertEquals(1, ret)
-
-    @testing.gen_test
     def test_find_cookbook(self):
         self.client._client = mock.Mock()
         resource = mock.Mock(name='Resource')
@@ -105,65 +98,6 @@ class TestRightScale(testing.AsyncTestCase):
             u_mock.assert_called_once_with(
                 self.mock_client.right_scripts, 'test', exact=True)
             self.assertEquals(None, ret)
-
-    @testing.gen_test
-    def test_find_by_name_and_keys(self):
-        # Create a single object that we'll return in our search
-        res_mock = mock.MagicMock(name='FakeResource')
-        res_mock.soul = {'name': 'FakeResource'}
-
-        # Do a search, but return nothing.
-        ret = yield self.client.find_by_name_and_keys(
-            collection=mock.MagicMock(), exact=True,
-            name='FakeResource', href='/123')
-        self.assertEquals(ret, [])
-
-        # Now create a fake Rightscale resource collection object.
-        collection = mock.MagicMock(name='collection')
-
-        # Do a search for a single resource with an additional keyword argument
-        # passed in to the search
-        collection.index.return_value = [res_mock]
-        ret = yield self.client.find_by_name_and_keys(
-            collection=collection, exact=True,
-            name='FakeResource', href='/123')
-        self.assertEquals(ret, res_mock)
-        collection.index.assert_called_once_with(
-            params={'filter[]': ['href==/123', 'name==FakeResource']})
-        collection.reset_mock()
-
-        # Same search -- but we return two resources instead of one. We should
-        # get both back.
-        collection.index.return_value = [res_mock, res_mock]
-        ret = yield self.client.find_by_name_and_keys(
-            collection=collection, exact=True,
-            name='FakeResource', href='/123')
-        self.assertEquals(ret, [res_mock, res_mock])
-        collection.index.assert_called_once_with(
-            params={'filter[]': ['href==/123', 'name==FakeResource']})
-        collection.reset_mock()
-
-        # Now do the same search, but with exact=False
-        collection.index.return_value = [res_mock]
-        ret = yield self.client.find_by_name_and_keys(
-            collection=collection, exact=False,
-            name='FakeResource', href='/123')
-        self.assertEquals(ret, [res_mock])
-        collection.index.assert_called_once_with(
-            params={'filter[]': ['href==/123', 'name==FakeResource']})
-        collection.reset_mock()
-
-    @testing.gen_test
-    def test_destroy_resource(self):
-        mock_res = mock.MagicMock(res='MockedResource')
-        yield self.client.destroy_resource(mock_res)
-        mock_res.self.destroy.assert_called_once()
-
-    @testing.gen_test
-    def test_create_resource(self):
-        mock_res = mock.MagicMock(res='MockedResource')
-        yield self.client.create_resource(mock_res, params=123)
-        mock_res.self.create.assert_called_once()
 
     @testing.gen_test
     def test_clone_server_array(self):
@@ -201,14 +135,14 @@ class TestRightScale(testing.AsyncTestCase):
         self.assertEquals(None, ret)
 
     @testing.gen_test
-    def test_update(self):
+    def test_update_server_array(self):
         # Create a mock and the params we're going to pass in
         sa_mock = mock.MagicMock()
         sa_mock.self.update.return_value = True
         sa_mock.self.show.return_value = 'test'
         params = {'server_array[name]': 'new_name'}
 
-        ret = yield self.client.update(sa_mock, params)
+        ret = yield self.client.update_server_array(sa_mock, params)
         sa_mock.self.update.assert_called_once_with(params=params)
 
         self.assertEquals(ret, 'test')
@@ -223,7 +157,7 @@ class TestRightScale(testing.AsyncTestCase):
             array.next_instance.show().inputs.index())
 
     @testing.gen_test
-    def test_update_inputs(self):
+    def test_update_server_array_inputs(self):
         ni_mock = mock.MagicMock(name='next_instance')
         ni_mock.inputs.multi_update.return_value = None
         sa_mock = mock.MagicMock(name='server_array')

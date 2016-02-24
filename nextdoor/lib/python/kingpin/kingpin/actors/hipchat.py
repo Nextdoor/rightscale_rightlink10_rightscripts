@@ -12,24 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.hipchat`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The Hipchat Actors allow you to send messages to a HipChat room at stages
-during your job execution. The actor supports dry mode by validating that the
-configured API Token has access to execute the methods, without actually
-sending the messages.
-
-**Required Environment Variables**
-
-:HIPCHAT_TOKEN:
-  HipChat API Token
-
-:HIPCHAT_NAME:
-  HipChat message from name
-  (defaults to ``Kingpin``)
-"""
+"""Hipchat Actor objects"""
 
 import logging
 import os
@@ -116,12 +99,15 @@ class HipchatBase(base.HTTPBaseActor):
             # These are HTTPErrors that we know about, and can log specific
             # error messages for.
 
-            self.log.critical(e)
-            if e.code in (401, 403):
+            if e.code == 401:
                 # "The authentication you provided is invalid."
                 raise exceptions.InvalidCredentials(
                     'The "HIPCHAT_NAME" or "HIPCHAT_TOKEN" supplied is '
-                    'invalid. %s' % e)
+                    'invalid.')
+            elif e.code == 403:
+                # "You have exceeded the rate limit"
+                raise exceptions.RecoverableActorFailure(
+                    'Hit the HipChat API Rate Limit. Try again later.')
             else:
                 # We ran into a problem we can't handle. Also, keep in mind
                 # that @utils.retry() was used, so this error happened several
@@ -134,34 +120,7 @@ class HipchatBase(base.HTTPBaseActor):
 
 class Message(HipchatBase):
 
-    """Sends a message to a room in HipChat.
-
-    **Options**
-
-    :room:
-      (str) The string-name (or ID) of the room to send a message to
-
-    :message:
-      (str) Message to send
-
-    **Examples**
-
-    .. code-block:: json
-
-       { "actor": "hipchat.Message",
-         "desc": "Send a message!",
-         "options": {
-           "room": "Operations",
-           "message": "Beginning Deploy: v1.2"
-         }
-       }
-
-    **Dry Mode**
-
-    Fully supported -- does not actually send messages to a room, but validates
-    that the API credentials would have access to send the message using the
-    HipChat ``auth_test`` optional API argument.
-    """
+    """Simple Hipchat Message sending actor."""
 
     all_options = {
         'room': (str, REQUIRED, 'Hipchat room name'),
@@ -230,31 +189,7 @@ class Message(HipchatBase):
 
 class Topic(HipchatBase):
 
-    """Sets a HipChat room topic.
-
-    **Options**
-
-    -  ``room`` - The string-name (or ID) of the room to set the topic of
-    -  ``topic`` - String of the topic to send
-
-    **Examples**
-
-    .. code-block:: json
-
-      { "actor": "hipchat.Topic",
-        "desc": "set the room topic",
-        "options": {
-          "room": "Operations",
-          "topic": "Latest Deployment: v1.2"
-        }
-      }
-
-    **Dry Mode**
-
-    Fully supported -- does not actually set a room topic, but validates
-    that the API credentials would have access to set the topic of the room
-    requested.
-    """
+    """Simple Hipchat Room Topic Setter"""
 
     all_options = {
         'room': (str, REQUIRED, 'Hipchat room name'),

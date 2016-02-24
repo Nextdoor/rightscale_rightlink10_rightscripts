@@ -12,10 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.aws.cloudformation`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-"""
+"""AWS.CloudFormation Actors"""
 
 import logging
 
@@ -178,61 +175,11 @@ class CloudFormationBaseActor(base.AWSBaseActor):
 
 class Create(CloudFormationBaseActor):
 
-    """Creates a CloudFormation stack.
+    """Creates an Amazon CF Stack.
 
-    Creates a CloudFormation stack from scratch and waits until the stack is
-    fully built before exiting the actor.
+    http://boto.readthedocs.org/en/latest/ref/cloudformation.html
+    #boto.cloudformation.connection.CloudFormationConnection.create_stack
 
-    **Options**
-
-    :capabilities:
-      A list of CF capabilities to add to the stack.
-
-    :disable_rollback:
-      Set to True to disable rollback of the stack if creation failed.
-
-    :name:
-      The name of the queue to create
-
-    :parameters:
-      A dictionary of key/value pairs used to fill in the parameters for the
-      CloudFormation template.
-
-    :region:
-      AWS region (or zone) string, like 'us-west-2'
-
-    :template:
-      String of path to CloudFormation template. Can either be in the form of a
-      local file path (ie, `./my_template.json`) or a URI (ie
-      `https://my_site.com/cf.json`).
-
-    :timeout_in_minutes:
-      The amount of time that can pass before the stack status becomes
-      CREATE_FAILED.
-
-    **Examples**
-
-    .. code-block:: json
-
-       { "desc": "Create production backend stack",
-         "actor": "aws.cloudformation.Create",
-         "options": {
-           "capabilities": [ "CAPABILITY_IAM" ],
-           "disable_rollback": true,
-           "name": "%CF_NAME%",
-           "parameters": {
-             "test_param": "%TEST_PARAM_NAME%",
-           },
-           "region": "us-west-1",
-           "template": "/examples/cloudformation_test.json",
-           "timeout_in_minutes": 45,
-         }
-       }
-
-    **Dry Mode**
-
-    Validates the template, verifies that an existing stack with that name does
-    not exist. Does not create the stack.
     """
 
     all_options = {
@@ -375,31 +322,11 @@ class Create(CloudFormationBaseActor):
 
 class Delete(CloudFormationBaseActor):
 
-    """Deletes a CloudFormation stack
+    """Deletes an Amazon CF Stack.
 
-    **Options**
+    http://boto.readthedocs.org/en/latest/ref/cloudformation.html
+    #boto.cloudformation.connection.CloudFormationConnection.delete_stack
 
-    :name:
-      The name of the queue to create
-
-    :region:
-      AWS region (or zone) string, like 'us-west-2'
-
-    **Examples**
-
-    .. code-block:: json
-
-       { "desc": "Create production backend stack",
-         "actor": "aws.cloudformation.Create",
-         "options" {
-           "region": "us-west-1",
-           "name": "%CF_NAME%",
-         }
-       }
-
-    **Dry Mode**
-
-    Validates that the CF stack exists, but does not delete it.
     """
 
     all_options = {

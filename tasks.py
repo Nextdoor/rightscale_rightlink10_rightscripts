@@ -1,6 +1,5 @@
 import sys
 import os
-import shutil
 from os import walk, chdir
 import fnmatch
 from invoke import run, task, Collection
@@ -70,12 +69,10 @@ def handle_repo(repo):
 
     dest = str(repo['destination'])
     if os.path.exists(dest):
-        try:
-            print(Fore.BLUE + "{} already exists; removing...".format(dest))
-            shutil.rmtree(dest)
-        except shutil.Error as e:
+        print(Fore.BLUE + "{} already exists; removing...".format(dest))
+        result = run("rm -rf {}".format(dest), echo=True)
+        if result.failed:
             print(Fore.RED + "Failed while removing {}".format(str(dest)))
-            print(str(e))
             sys.exit(-1)
 
     try:

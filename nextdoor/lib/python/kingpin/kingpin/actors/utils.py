@@ -12,12 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.utils`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Misc methods for dealing with Actors.
-"""
+"""Misc methods for dealing with Actors"""
 
 import logging
 

@@ -12,13 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.aws.settings`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Common settings used by many of the `kingpin.actors.aws` modules.
-"""
-
+"""Common settings for AWS Actors"""
 
 import os
 

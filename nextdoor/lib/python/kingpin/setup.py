@@ -25,7 +25,6 @@ from setuptools import find_packages
 from kingpin.version import __version__
 
 PACKAGE = 'kingpin'
-DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def maybe_rm(path):
@@ -134,7 +133,7 @@ class SourceDistHook(sdist):
     def run(self):
         with open('version.rst', 'w') as f:
             f.write(':Version: %s\n' % __version__)
-        shutil.copy('%s/README.rst' % DIR, 'README')
+        shutil.copy('README.md', 'README')
         sdist.run(self)
         os.unlink('MANIFEST')
         os.unlink('README')
@@ -145,7 +144,7 @@ setup(
     name=PACKAGE,
     version=__version__,
     description='Deployment Automation Engine',
-    long_description=open('%s/README.rst' % DIR).read(),
+    long_description=open('README.md').read(),
     author='Nextdoor Engineering',
     author_email='eng@nextdoor.com',
     url='https://github.com/Nextdoor/kingpin',
@@ -154,11 +153,11 @@ setup(
     keywords='apache',
     packages=find_packages(),
     test_suite='nose.collector',
-    tests_require=open('%s/requirements.test.txt' % DIR).readlines(),
+    tests_require=open('requirements.test.txt').readlines(),
     setup_requires=[],
-    install_requires=open('%s/requirements.txt' % DIR).readlines(),
+    install_requires=open('requirements.txt').readlines(),
     dependency_links=[
-        'https://github.com/diranged/python-rightscale-1/tarball/fix_timeout_on_all_api_calls#egg=python-rightscale-0.1.6'
+        'https://github.com/diranged/python-rightscale-1/tarball/fix_find_server_array#egg=python-rightscale-0.1.5'
     ],
     entry_points={
         'console_scripts': [

@@ -12,11 +12,7 @@
 #
 # Copyright 2014 Nextdoor.com, Inc
 
-"""
-:mod:`kingpin.actors.base`
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Base Actor object class
+"""Base Actor object class
 
 An Actor object is a class that executes a single logical action
 on a resource as part of your deployment structure. For example, you
@@ -188,8 +184,7 @@ class BaseActor(object):
 
         for opt, value in self._options.items():
             if opt not in self.all_options:
-                option_warnings.append('Option "%s" is not expected by %s.' % (
-                    opt, self.__class__.__name__))
+                option_warnings.append('Option "%s" is not expected.' % opt)
                 continue
 
             expected_type = self.all_options[opt][0]
@@ -267,11 +262,10 @@ class BaseActor(object):
         """Wraps a Coroutine method in a timeout.
 
         Used to wrap the self.execute() method in a timeout that will raise an
-        ActorTimedOut exception if an actor takes too long to execute.
-
-        *Note, Tornado 4+ does not allow you to actually kill a task on the
-        IOLoop.*  This means that all we are doing here is notifying the caller
-        (through the raised exception) that a problem has happened.
+        ActorTimedOut exception if an actor takes too long to execute. *Note,
+        Tornado 4+ does not allow you to actually kill a task on the IOLoop.
+        This means that all we are doing here is notifying the caller (through
+        the raised exception) that a problem has happened.
 
         Fairly simple Actors should actually 'stop executing' when this
         exception is raised. Complex actors with very unique behaviors though
@@ -312,17 +306,6 @@ class BaseActor(object):
 
         raise gen.Return(ret)
 
-    def str2bool(self, v):
-        """Returns a Boolean from a variety of inputs.
-
-        args:
-            value: String/Bool
-
-        returns:
-            A boolean
-        """
-        return str(v).lower() not in ("no", "false", "f", "0")
-
     def _check_condition(self):
         """Check if specified condition allows this actor to run.
 
@@ -331,9 +314,13 @@ class BaseActor(object):
         the value of self._condition is a string "False" or string "0".
         """
 
-        check = self.str2bool(self._condition)
-        self.log.debug('Condition %s evaluates to %s' % (
-            self._condition, check))
+        try:  # Treat as string
+            value = self._condition.lower()
+            check = (value not in ('false', '0'))
+        except AttributeError:  # Not a string
+            value = self._condition
+            check = bool(value)
+
         return check
 
     def _fill_in_contexts(self, context={}, strict=True):
@@ -351,7 +338,6 @@ class BaseActor(object):
         Raises:
             exceptions.InvalidOptions
         """
-        # Inject contexts into Description
         try:
             self._desc = utils.populate_with_tokens(
                 self._desc,
@@ -361,18 +347,6 @@ class BaseActor(object):
                 strict=strict)
         except LookupError as e:
             msg = 'Context for description failed: %s' % e
-            raise exceptions.InvalidOptions(msg)
-
-        # Inject contexts into condition
-        try:
-            self._condition = utils.populate_with_tokens(
-                str(self._condition),
-                context,
-                self.left_context_separator,
-                self.right_context_separator,
-                strict=strict)
-        except LookupError as e:
-            msg = 'Context for condition failed: %s' % e
             raise exceptions.InvalidOptions(msg)
 
         # Convert our self._options dict into a string for fast parsing

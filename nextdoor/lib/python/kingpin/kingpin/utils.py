@@ -13,9 +13,6 @@
 # Copyright 2013 Nextdoor.com, Inc.
 
 """
-:mod:`kingpin.utils`
-^^^^^^^^^^^^^^^^^^^^
-
 Common package for utility functions.
 """
 
@@ -60,10 +57,7 @@ def str_to_class(string):
 
     Args:
         cls: String name of the wanted class and package.
-             eg: kingpin.actors.foo.bar
-             eg: misc.Sleep
-             eg: actors.misc.Sleep
-             eg: my.private.Actor
+             eg: kingpin.actor.foo.bar
 
     Returns:
         A reference to the actual Class to be instantiated
@@ -74,25 +68,13 @@ def str_to_class(string):
     class_name = string_elements.pop()
     module_name = '.'.join(string_elements)
 
-    for prefix in ['kingpin.actors', 'actors']:
-        try:
-            prefixed_module_name = "%s.%s" % (prefix, module_name)
-
-            # load the module, will raise ImportError if module cannot be
-            # loaded or if that module has a failed import inside of it.
-            m = __import__(prefixed_module_name, globals(), locals(),
-                           class_name)
-
-            # get the class, will raise AttributeError if class cannot be found
-            return getattr(m, class_name)
-
-        except ImportError:
-            # pass right now -- will try one more time at the end of this class
-            # to import the raw string without any kingpin prefixes.
-            pass
-
+    # load the module, will raise ImportError if module cannot be loaded
+    # or if that module has a failed import inside of it.
     m = __import__(module_name, globals(), locals(), class_name)
-    return getattr(m, class_name)
+    # get the class, will raise AttributeError if class cannot be found
+    c = getattr(m, class_name)
+
+    return c
 
 
 def setup_root_logger(level='warn', syslog=None, color=False):
@@ -100,8 +82,8 @@ def setup_root_logger(level='warn', syslog=None, color=False):
 
     Args:
         level: Logging level string ('warn' is default)
-        syslog: String representing syslog facility to output to.  If empty,
-        logs are written to console.
+        syslog: String representing syslog facility to output to.
+                If empty, logs are written to console.
         color: Colorize the log output
 
     Returns:
@@ -351,21 +333,19 @@ def create_repeating_log(logger, message, handle=None, **kwargs):
     """Create a repeating log message.
 
     This function sets up tornado to repeatedly log a message in a way that
-    does not need to be `yield`-ed.
-
-    Example::
-
-       >>> yield do_tornado_stuff(1)
-       >>> log_handle = create_repeating_log('Computing...')
-       >>> yield do_slow_computation_with_insufficient_logging()
-       >>> clear_repeating_log(log_handle)
+    does not need to be `yield`ed.
+    Example:
+    >>> yield do_tornado_stuff(1)
+    >>> log_handle = create_repeating_log('Computing...')
+    >>> yield do_slow_computation_with_insufficient_logging()
+    >>> clear_repeating_log(log_handle)
 
     This is similar to javascript's setInterval() and clearInterval().
 
     Args:
         message: String to pass to log.info()
-        kwargs: values accepted by datetime.timedelta namely seconds, and
-        milliseconds.
+        **kwargs: values accepted by datetime.timedelta
+                  namely seconds, and milliseconds.
 
     Must be cleared via clear_repeating_log()
     Only handles one interval per actor.
