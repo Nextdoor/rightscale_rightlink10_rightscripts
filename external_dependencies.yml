@@ -2,11 +2,13 @@
 repos:
 
   kingpin:
-    type: python
+    type: git
     source: https://github.com/nextdoor/kingpin
     ref: master
+    destination: ./nextdoor/lib/python/kingpin
 
   storage-scripts:
-    type: shell
+    type: git
     source: https://github.com/diranged/storage-scripts
     ref: master
+    destination: ./nextdoor/lib/python/storage-scripts

@@ -1,4 +1,7 @@
-import os, sys
+import sys
+import os
+import shutil
+from os import walk, chdir
 import fnmatch
 from invoke import run, task, Collection
 from colorama import init, Fore
@@ -19,10 +22,53 @@ def find_files(pattern):
       array: list of matching files
     """
     matches = []
-    for root, dirnames, filenames in os.walk(os.path.dirname(__file__)):
+    for root, dirnames, filenames in walk(os.path.dirname(__file__)):
         for filename in fnmatch.filter(filenames, pattern):
             matches.append(os.path.join(root, filename))
     return matches
+
+
+def handle_repo(repo):
+    """
+    Given a dictionary representing our repo settings, download and checkout.
+    """
+    required_keys = ('type', 'source', 'ref', 'destination')
+    if not all(key in repo for key in required_keys):
+        print(Fore.RED + str(repo))
+        print(Fore.RED + "repo spec must include: {}".format(
+            str(required_keys)))
+        sys.exit(-1)
+
+    if 'git' != repo['type']:
+        print(Fore.RED + str(repo))
+        print(Fore.RED + "repo type must be 'git'!")
+        sys.exit(-1)
+
+    dest = str(repo['destination'])
+    if os.path.exists(dest):
+        try:
+            print(Fore.BLUE + "{} already exists; removing...".format(dest))
+            shutil.rmtree(dest)
+        except shutil.Error as e:
+            print(Fore.RED + "Failed while removing {}".format(str(dest)))
+            print(str(e))
+            sys.exit(-1)
+
+    try:
+        os.makedirs(dest)
+    except os.OSError as e:
+        print(Fore.RED + "Failed creating directory '{}'".format(dest))
+        print(str(e))
+
+    source = repo['source']
+    ref = repo['ref']
+    result = run("git clone {} {} && "\
+                 "git checkout {}"\
+                 "rm -rf {}/.git".format(source, dest, ref, dest), echo=True)
+    if 0 != result:
+        print(Fore.Red + "Failed checking out repo: {} / {} to '{}'!".format(
+            source, ref, dest))
+        sys.exit(-1)
 
 
 @task
@@ -31,14 +77,14 @@ def prep():
     Download and place external dependencies as a way to avoid
     git submodules/subtrees. Would be nice if librarian could be leveraged...
     """
-
     newcwd = sys.path[0]
     if '' != newcwd:
         # I'm not sure this is absolutely necessary but to be careful...
         print(Fore.GREEN + "Changing cwd to {}".format(newcwd))
-        os.chdir(sys.path[0])
+        chdir(sys.path[0])
     else:
-        sys.exit("I am very confused about our sys.path[0] of ''!")
+        print(Fore.Red + "I am very confused about our sys.path[0] of ''!")
+        sys.exit(-1)
 
     deps = {}
     with open('external_dependencies.yml') as deps:
@@ -48,12 +94,10 @@ def prep():
             print(Fore.RED + str(e))
             sys.exit(-1)
 
-    print(str(deps))
-    # find deps file and load deps from YAML
-    # for repo in repos:
-    # cd to appropriate libdir
-    # clone repo
-    # checkout out branch/tag/commit
+    if 'repos' in deps:
+        for repo in deps['repos']:
+            chdir(sys.path[0])
+            handle_repo(deps['repos'][repo])
 
 
 @task
