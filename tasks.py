@@ -6,9 +6,14 @@ import fnmatch
 from invoke import run, task, Collection
 from colorama import init, Fore
 import yaml
+import numpy
 
 PEP8_IGNORE = 'E402,E266,F841'
 init()
+
+# These things don't pass syntax/lint checks and are external deps.
+EXCLUDE_DIRS = ['nextdoor/lib/python/kingpin',
+                'nextdoor/lib/python/storage-scripts']
 
 
 def find_files(pattern, excludes=[]):
@@ -17,20 +22,24 @@ def find_files(pattern, excludes=[]):
 
     Args:
       pattern (str): filename pattern to match
+      excludes: array of patterns for to exclude from find
 
     Returns:
       array: list of matching files
     """
     matches = []
+    DEBUG=False
     for root, dirnames, filenames in walk(os.path.dirname(__file__)):
         for filename in fnmatch.filter(filenames, pattern):
             matches.append(os.path.join(root, filename))
-            
-    # double list comprehension...no, just loop
-    newmatches = []
-    for match in matches.items():
-        if not all(exclude in match for exclude in excludes):
-            newmatches.append(match)
+
+    # Oh, lcomp sytnax...
+    for exclude in excludes:
+        matches = numpy.asarray(
+            [match for match in matches if exclude not in match])
+
+    if DEBUG:
+        print(Fore.YELLOW + "Matches in find_files is : {}".format(str(matches)))
         
     return matches
 
@@ -58,6 +67,7 @@ def handle_repo(repo):
     # Rather than try to play clever games with any existing dep caches,
     # blow away what is in place and replace with a fresh clone + checkout.
     # 'prep' task is *meant* to run only rarely anyway.
+    
     dest = str(repo['destination'])
     if os.path.exists(dest):
         try:
@@ -79,11 +89,10 @@ def handle_repo(repo):
     source = repo['source']
     ref = repo['ref']
     result = run("git clone {} {} && "\
-                 "cd {} &&"\
-                 " git checkout {} && "\
+                 "(cd {} && git checkout {}) && "\
                  " rm -rf {}/.git".format(source, dest, dest, ref, dest),
                  echo=True)
-    if 0 != result:
+    if result.failed:
         print(Fore.RED + "Failed checking out repo: {} / {} to '{}'!".format(
             source, ref, dest))
         sys.exit(-1)
@@ -124,8 +133,6 @@ def syntax():
     Recursively syntax check various files.
     """
 
-    excludes = ['./nextdoor/lib/python/kingpin']
-
     print(Fore.GREEN + "Syntax checking of YAML files...")
     yaml_files = find_files('*.yaml') + find_files('*.yml')
     for yaml_file in yaml_files:
@@ -137,7 +144,7 @@ def syntax():
                 print(Fore.RED + str(e))
 
     print(Fore.GREEN + "Syntax checking of Python files...")
-    python_files = find_files('*.py', excludes=excludes)
+    python_files = find_files('*.py', excludes=EXCLUDE_DIRS)
     cmd = "python -m py_compile {}".format(' '.join(python_files))
     result = run(cmd, echo=True)
 
@@ -157,12 +164,10 @@ def lint_check():
     """
     print(Fore.GREEN + "Lint checking of Python files...")
 
-    excludes = 'nextdoor/lib/python/kingpin/*'
-
-    python_files = find_files('*.py')
+    python_files = find_files('*.py', excludes=EXCLUDE_DIRS)
     cmd = """
-flake8 --exclude '{}' --count --statistics --show-source --show-pep8 --max-line-length=160 \
---ignore={} {}""".format(excludes, PEP8_IGNORE, ' '.join(python_files))
+flake8 --count --statistics --show-source --show-pep8 --max-line-length=160 \
+--ignore={} {}""".format(PEP8_IGNORE, ' '.join(python_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean
@@ -176,7 +181,7 @@ def lint_fix():
     """
     print(Fore.GREEN + "Lint fixing Python files...")
 
-    python_files = find_files('*.py')
+    python_files = find_files('*.py', excludes=EXCLUDE_DIRS)
     cmd = """
 autopep8 -r --in-place --ignore={} {}
 """.format(PEP8_IGNORE, ' '.join(python_files))
