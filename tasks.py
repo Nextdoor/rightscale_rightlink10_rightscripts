@@ -28,7 +28,7 @@ def find_files(pattern, excludes=[]):
       array: list of matching files
     """
     matches = []
-    DEBUG=False
+    DEBUG = False
     for root, dirnames, filenames in walk(os.path.dirname(__file__)):
         for filename in fnmatch.filter(filenames, pattern):
             matches.append(os.path.join(root, filename))
@@ -40,7 +40,7 @@ def find_files(pattern, excludes=[]):
 
     if DEBUG:
         print(Fore.YELLOW + "Matches in find_files is : {}".format(str(matches)))
-        
+
     return matches
 
 
@@ -67,7 +67,7 @@ def handle_repo(repo):
     # Rather than try to play clever games with any existing dep caches,
     # blow away what is in place and replace with a fresh clone + checkout.
     # 'prep' task is *meant* to run only rarely anyway.
-    
+
     dest = str(repo['destination'])
     if os.path.exists(dest):
         try:
@@ -88,8 +88,8 @@ def handle_repo(repo):
     # The dep is cleansed of .git directory.
     source = repo['source']
     ref = repo['ref']
-    result = run("git clone {} {} && "\
-                 "(cd {} && git checkout {}) && "\
+    result = run("git clone {} {} && "
+                 "(cd {} && git checkout {}) && "
                  " rm -rf {}/.git".format(source, dest, dest, ref, dest),
                  echo=True)
     if result.failed:
@@ -165,9 +165,9 @@ def lint_check():
     print(Fore.GREEN + "Lint checking of Python files...")
 
     python_files = find_files('*.py', excludes=EXCLUDE_DIRS)
-    cmd = """
-flake8 --count --statistics --show-source --show-pep8 --max-line-length=160 \
---ignore={} {}""".format(PEP8_IGNORE, ' '.join(python_files))
+    cmd = "flake8 --count --statistics --show-source --show-pep8"\
+          " --max-line-length=160 --ignore={} {}".format(
+              PEP8_IGNORE, ' '.join(python_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean
@@ -182,9 +182,8 @@ def lint_fix():
     print(Fore.GREEN + "Lint fixing Python files...")
 
     python_files = find_files('*.py', excludes=EXCLUDE_DIRS)
-    cmd = """
-autopep8 -r --in-place --ignore={} {}
-""".format(PEP8_IGNORE, ' '.join(python_files))
+    cmd = "autopep8 -r --in-place --ignore={} {}".format(
+        PEP8_IGNORE, ' '.join(python_files))
     result = run(cmd, echo=True)
 
     # won't get here unless things run clean
