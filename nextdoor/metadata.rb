@@ -28,6 +28,16 @@ attribute "AWS_SECRET_ACCESS_KEY",
           :type => "string",
           :recipes => ['nextdoor::mounts', 'nextdoor::elb-connect',
                        'nextdoor::elb-disconnect']
+
+attribute "BCACHE_MODE",
+          :category => "CLOUD",
+          :display_name => "BCACHE_MODE",
+          :description => "If bcache enabled, what mode? Ex: writeback, "\
+                          "writethrough",
+          :require => "optional",
+          :type => "string",
+          :default => "writethrough",
+          :recipes => [ 'nextdoor::mounts' ]
           
 attribute "DEBUG",
           :category => "NEXTDOOR",
@@ -87,6 +97,24 @@ attribute "ELB_NAME",
           :type => "string",
           :recipes => ['nextdoor::elb-connect', 'nextdoor::elb-disconnect']
 
+attribute "ENABLE_BCACHE",
+          :category => "STORAGE",
+          :display_name => "ENABLE_BCACHE",
+          :description => "Enable bcache on supplemental storage volumes.",
+          :required => "optional",
+          :type => "string",
+          :default => "0",
+          :recipes => ['nextdoor::mounts']
+
+attribute "EXCLUDED_PARTITIONS",
+          :category => "STORAGE",
+          :display_name => "EXCLUDED_PARTITIONS",
+          :description => "Partitions to ignore when creating storage vols.",
+          :required => "optional",
+          :type => "string",
+          :default => "/dev/xvda /dev/xvda1 /dev/sda /dev/sda1",
+          :recipes => ['nextdoor::mounts']
+
 attribute "INSTANCE_ID",
           :category => "NEXTDOOR: HOSTNAME SETTINGS",
           :display_name => "INSTANCE_ID",
@@ -95,6 +123,15 @@ attribute "INSTANCE_ID",
           :type => "string",
           :recipes => ['nextdoor::dump-env', 'nextdoor::hostname',
                        'nextdoor::elb-connect', 'nextdoor::elb-disconnect']
+
+attribute "MOUNT_OPTS",
+          :category => "STORAGE",
+          :display_name => "MOUNT_OPTS",
+          :description => "With which options should the storage be mounted?",
+          :required => "optional",
+          :type => "string",
+          :default => "default,noatime,nodiratime,nobootwait",
+          :recipes => ['nextdoor::mounts']
 
 attribute "PUPPET_AGENT_USE_CACHED_CATALOG",
           :display_name => "PUPPET_AGENT_USE_CACHED_CATALOG",
@@ -205,7 +242,10 @@ attribute "PUPPET_SERVER_HOSTNAME",
 attribute "RS_CLOUD_PROVIDER",
           :category => "CLOUD",
           :display_name => "RS_CLOUD_PROVIDER",
-          :description => "In what cloud context are we running? <ec2|google>",
+          :description => "In what cloud context are we running? <ec2|google>"\
+                          " Note that 'google' is an option here but it is"\
+                          " quite unlikley the underlying scripts will allow"\
+                          " this value. For future expansion only. ;)", 
           :required => "optional",
           :type => "string",
           :choice => ['ec2', 'google'],
@@ -219,6 +259,15 @@ attribute "SERVER_NAME",
           :require => "optional",
           :type => "string",
           :recipes => ['nextdoor:dump-env', 'nextdoor::hostname']
+
+attribute "STORAGE_BLOCK_SIZE",
+          :category => "STORAGE",
+          :display_name => "STORAGE_BLOCK_SIZE",
+          :description => "Block size in KB for extra storage volumes.",
+          :required => "optional",
+          :type => "string",
+          :default => "256",
+          :recipes => ['nextdoor::mounts']
 
 attribute "STORAGE_FSTYPE",
           :category => "STORAGE",
@@ -237,6 +286,15 @@ attribute "STORAGE_MOUNTPOINT",
           :required => "optional",
           :type => "string",
           :default => "/mnt",
+          :recipes => ['nextdoor::mounts']
+
+attribute "STORAGE_NO_PARTITIONS_EXIT_CODE",
+          :category => "STORAGE",
+          :display_name => "STORAGE_NO_PARTITIONS_EXIT_CODE",
+          :description => "./nextdoor/lib/shell/storage-scripts for details.",
+          :required => "optional",
+          :type => "string",
+          :default => "1",
           :recipes => ['nextdoor::mounts']
 
 attribute "STORAGE_RAID_LEVEL",
@@ -266,8 +324,7 @@ attribute "STORAGE_TYPE",
           :description => "If storage type is 'instance', local normal storage"\
                           " is used. If type is 'ebs', a whole new set of EBS"\
                           " volumes will be created. If 'remount_ebs', we will"\
-                          " re-mount EBS volumes supplied in the"\
-                          " STORAGE_VOLIDLIST",
+                          " re-mount EBS volumes.",
           :required => "optional",
           :type => "string",
           :default => "instance",
@@ -283,15 +340,4 @@ attribute "STORAGE_VOLCOUNT",
           :type => "string",
           :default => "0",
           :choice => ['0', '4', '6', '8'],
-          :recipes => ['nextdoor::mounts']
-
-attribute "STORAGE_VOLIDLIST",
-          :category => "STORAGE",
-          :display_name => "STORAGE_VOLIDLIST",
-          :description => "IF STORAGE_TYPE == remounte_ebs: Comma separated"\
-                          " list of EBS Volume IDS to try to mount on boot up"\
-                          " and re-join together as a RAID volume. This is used"\
-                          " for recovery only.",
-          :required => "optional",
-          :type => "array",
           :recipes => ['nextdoor::mounts']

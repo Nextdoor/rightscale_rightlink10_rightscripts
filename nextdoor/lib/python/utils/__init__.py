@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.handlers.SysLogHandler('/dev/log'))
 
+# sneaky way to make debconf stay out of the way ;)
+environ['DEBIAN_FRONTEND'] = 'noninteractive'
+environ['DEBCONF_NONINTERACTIVE_SEEN'] = 'true'
+
 
 def normalize_hostname_to_rfc(mystr):
     """
@@ -83,11 +87,17 @@ def log_and_stdout(msg):
     Args:
       msg (str): message to send to stdout and syslog
 
-    Returns
+    Returns:
       nothing
     """
-    if isinstance(msg, bytes) or isinstance(msg, bytearray):
-        msg = msg.decode('utf-8')
+
+    if not isinstance(msg, (str, bytes, bytearray)):
+        log_and_stdout("   *** Should never get here! Something passed was not"
+                       " a str, bytes, or a bytearray!")
+
+    if isinstance(msg, (bytes, bytearray)):
+        msg = msg.decode('utf-8', errors='replace')
+
     logger.info(msg)
     print(msg)
 
@@ -233,8 +243,8 @@ def apt_get_update(refresh_interval_mins=30):
                 open(time_stamp_file, 'w').close()
                 run_cmd = True
             else:
-                log_and_stdout("   *** apt-get update run {} minutes ago. ***   "
-                               "Not re-running.".format(
+                log_and_stdout("   *** apt-get update run < {} minutes ago."
+                               " Not re-running. ***   ".format(
                                    str(refresh_interval_mins)))
 
         except OSError as e:

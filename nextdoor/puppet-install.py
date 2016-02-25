@@ -20,7 +20,6 @@
 
 import os
 import sys
-import yaml
 import string
 import random
 from os import environ
@@ -28,6 +27,12 @@ from os import environ
 from lib.python.utils import detect_debug_mode, assert_command, validate_env
 from lib.python.utils import mkdir_p, normalize_hostname_to_rfc
 from lib.python.utils import log_and_stdout, apt_get_update
+
+# Oh my oh my...this is so nasty
+apt_get_update()
+assert_command("apt-get install -y python3-pip", "Failed to install Python3 pip!")
+assert_command("pip3 install PyYAML==3.11", "Failed to install PyYAML!")
+import yaml
 
 
 def install_dependencies():

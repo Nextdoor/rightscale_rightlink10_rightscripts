@@ -15,120 +15,19 @@
 #   - STORAGE_VOLIDLIST
 #   - STORAGE_SIZE
 #   - STORAGE_MOUNTPOINT
+#   - STORAGE_BLOCK_SIZE
+#   - STORAGE_MOUNTPOINT
+#   - MOUNT_OPTS
+#   - STORAGE_NO_PARTITIONS_EXIT_CODE
+#   - EXCLUDED_PARTITIONS
+#   - ENABLE_BCACHE
+#   - BCACHE_MODE
 #   - DEBUG
 #
-
-import sys
 import os
 from os import environ
 
-from lib.python.utils import detect_debug_mode, assert_command, validate_env
-from lib.python.utils import is_volumized, volumize, apt_get_update
-
-
-def install_dependencies():
-    """
-    Instal some utilities we are goig to need to bootstrap Pupppet.
-    """
-    debs = 'python-pip xfsprogs python3-pip python3-yaml'
-    blacklist_debs = 'python-boto'
-    python27_packages = 'boto'
-
-    environ['DEBIAN_FRONTEND'] = 'noninteractive'
-    environ['DEBCONF_INTERACTIVE_SEEN'] = 'true'
-
-    apt_get_update()
-    assert_command('apt-get install -y ' + debs,
-                   'Unable to install required .debs!')
-    assert_command('apt-get remove --purge -y ' + blacklist_debs,
-                   'Unable to remove blacklisted .deb!')
-    assert_command('pip2 install ' + python27_packages,
-                   'Unable to install a pip2 package!')
-    return True
-
-
-def ec2_mount():
-    """
-    Perform a mount of the EBS volumes.
-    """
-    mount_command = "python ./lib/python/attic/volume.py -k {} -s {} -a {} -m {} -t {} {} {} {} {} {}"
-
-    for key, regex in {
-        'AWS_ACCESS_KEY_ID': '^.+$',
-        'AWS_SECRET_ACCESS_KEY': '^.+$',
-        'STORAGE_TYPE': '^(instance|ebs|remount-ebs)$',
-        'EBS_TYPE': '^(standard|gp2|io1)$',
-    }.items():
-        validate_env(key, regex)
-
-    if not 'instance' == os.environ['STORAGE_TYPE']:
-        validate_env('STORAGE_VOLIDLIST', '^.+$')
-    else:
-        os.environ['STORAGE_VOLIDLIST'] = ''
-
-    mount_command = mount_command.format(
-        os.environ['AWS_ACCESS_KEY_ID'],
-        os.environ['AWS_SECRET_ACCESS_KEY'],
-        os.environ['STORAGE_TYPE'],
-        os.environ['STORAGE_MOUNTPOINT'],
-        os.environ['EBS_TYPE'],
-        os.environ['STORAGE_RAID_LEVEL'],
-        os.environ['STORAGE_VOLCOUNT'],
-        os.environ['STORAGE_VOLIDLIST'],
-        os.environ['STORAGE_FSTYPE'],
-        os.environ['STORAGE_SIZE']
-    )
-
-    assert_command(mount_command, 'Unable to mount the cloud storage!') and \
-        volumize()
-
-
-def google_mount():
-    """
-    Mount a Google volume.
-    """
-
-    # Bail out! But I'm leaving the code here for reference.
-    print("Google Cloud is no longer supported!")
-    sys.exit(-1)
-
-    mount_command = "python ./lib/python/attic/google_volume.py -a instance -m {} {} -f {}"
-
-    mount_command = mount_command.format(
-        os.environ['STORAGE_MOUNTPOINT'],
-        os.environ['STORAGE_RAID_LEVEL'],
-        os.environ['STORAGE_FSTYPE']
-    )
-
-    assert_command(mount_command, 'Unable to mount the cloud storage!') and \
-        volumize()
-
-
-def mount_volumes():
-    """
-    Mount all configured storage volumes.
-    """
-
-    if not is_volumized():
-
-        # validate the things which are common to all clouds
-        for key, regex in {
-                'RS_CLOUD_PROVIDER': '^(ec2|google)$',
-                'STORAGE_VOLCOUNT': '^(0|2|4|6)$',
-                'STORAGE_MOUNTPOINT': '^\/.+$',
-                'STORAGE_RAID_LEVEL': '^(0|1|5|10)',
-                'STORAGE_FSTYPE': '^(xfs|ext3|ext4)$'
-        }.items():
-            validate_env(key, regex)
-
-        if 0 < int(os.environ['STORAGE_VOLCOUNT']):
-            if 'ec2' == os.environ['RS_CLOUD_PROVIDER']:
-                ec2_mount()
-            else:
-                google_mount()
-
-    else:
-        print("   *** System is already Nextdoor volumized! ***   ")
+from lib.python.utils import detect_debug_mode, assert_command, log_and_stdout
 
 
 def main():
@@ -136,8 +35,40 @@ def main():
     The Fun Starts Here.
     """
     detect_debug_mode()
-    install_dependencies()
-    mount_volumes()
+
+    # Shell out to the oddball storage script from external deps.
+    # See the external_dependencies.yml for details.
+
+    # By default, put the storage script in "Big Hammer" mode.
+    os.environ['VERBOSE'] = '1'
+    os.environ['FORCE'] = '1'
+    os.environ['DRY'] = '0'
+
+    # The new storage script does not consistently honor all of the names
+    # dumped in the environment by previous iterations of the RightScripts
+    # so we're going to have to do a dirty little translation.
+
+    translated = {
+        'STORAGE_MOUNTPOINT': 'MOUNT_POINT',
+    }
+    for key, val in translated.items():
+        if key in environ:
+            log_and_stdout("   *** Translating {}={} into {}={} for mount"
+                           " script ***   ".format(
+                               key,
+                               environ.get(key),
+                               val,
+                               environ.get(key)))
+            os.environ[val] = os.environ.get(key)
+
+    assert_command("chmod +x ./setup.sh ./setup_aws.sh ./common.sh"
+                   " ./addons/bcache.sh",
+                   'Failed to mark storage scripts executable!',
+                   cwd='./lib/shell/storage-scripts')
+
+    assert_command('./setup.sh',
+                   'Storage/Volume setup failed!',
+                   cwd='./lib/shell/storage-scripts')
 
 if "__main__" == __name__:
     main()
