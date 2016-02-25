@@ -102,7 +102,7 @@ in the Python community.
 
 Python 'invoke' is a subproject of the Fabric project. For our purposes it fills
 a similar slot to Ruby's Rake in that it can be used to run tests locally and
-it is reference in the included 'circle.yaml' which is consumed by CircleCI.
+it is reference in the included '.travis.yaml' which is consumed by TravisCI.
 
 The following invoke tasks are available:
 
