@@ -18,7 +18,7 @@ the script exiting immediately with no attempt to recover (Fail Fast!).
 The scripts are also written to provide maximum visibility into their inner
 workings. This manifests primarily in two ways:
 
-1. Whenver a script shells out to a command-line tool it prints both the
+* Whenver a script shells out to a command-line tool it prints both the
 command and the resulting input to both stdout and syslog. Here's an example:
 
 ```ShellSession
@@ -48,7 +48,7 @@ Get:4 http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty/main ruby all 1:1.9
 ...
 ```
 
-1. Setting the environment variable 'DEBUG' to any value will result in
+* Setting the environment variable 'DEBUG' to any value will result in
 the script printing every available environment variable to both stdout and
 syslog formatted as blob of JSON. Here's an example:
 
