@@ -48,7 +48,7 @@ def handle_repo(repo):
     Given a dictionary representing our repo settings, download and checkout.
     """
 
-    # These things are all required even though somem of them could
+    # These things are all required even though some of them could
     # be defaulted.
     required_keys = ('type', 'source', 'ref', 'destination')
     if not all(key in repo for key in required_keys):
@@ -93,6 +93,16 @@ def handle_repo(repo):
         print(Fore.RED + "Failed checking out repo: {} / {} to '{}'!".format(
             source, ref, dest))
         sys.exit(-1)
+
+    # If he 'prep' key is present, run this command as a way of setting up
+    # the external dep.
+    if 'prep' in repo:
+        print(Fore.BLUE + "Executing specified 'prep' command: {}".format(
+            repo['prep']))
+        result = run(repo['prep'], echo=True)
+        if result.failed:
+            print(Fore.RED + "Failed while prepping!")
+            sys.exit(-1)
 
 
 @task

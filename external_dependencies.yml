@@ -6,6 +6,7 @@ repos:
     source: https://github.com/nextdoor/kingpin
     ref: v0.2.6
     destination: ./nextdoor/lib/python/kingpin
+    prep: pip install --build ./nextdoor/lib/python/kingpin -r ./nextdoor/lib/python/kingpin/requirements.txt
 
   storage-scripts:
     type: git
