@@ -233,7 +233,7 @@ def apt_get_update(refresh_interval_mins=30):
                 open(time_stamp_file, 'w').close()
                 run_cmd = True
             else:
-                log_and_stdout("apt-get update run {} minutes ago. "
+                log_and_stdout("   *** apt-get update run {} minutes ago. ***   "
                                "Not re-running.".format(
                                    str(refresh_interval_mins)))
 
