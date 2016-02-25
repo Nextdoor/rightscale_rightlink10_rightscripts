@@ -44,7 +44,7 @@ def elb_disconnect():
 
         # create and execute the Kingpin script for ELB reg
         try:
-            template_file = './lib/kingpin/templates/elb-disconnect.json.template'
+            template_file = './elb-disconnect.json.template'
             with NamedTemporaryFile() as kp_script:
                 kp_script.write(
                     Template(open(template_file).read()).safe_substitute(environ))

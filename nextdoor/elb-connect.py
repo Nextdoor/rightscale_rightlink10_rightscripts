@@ -49,7 +49,7 @@ def elb_connect():
         #   Kingpin can handlel this dereferencing as well butI do it here for transparency in that
         # I also validate and print the resulting template when in DEBUG mode.
         try:
-            template_file = './lib/kingpin/templates/elb-connect.json.template'
+            template_file = './elb-connect.json.template'
             with NamedTemporaryFile() as kp_script:
                 kp_script.write(
                     Template(open(template_file).read()).safe_substitute(environ))
