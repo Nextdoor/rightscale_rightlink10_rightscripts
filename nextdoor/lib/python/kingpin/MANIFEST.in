@@ -1,5 +1,0 @@
-include README.md
-include CHANGELOG.md
-include kingpin.1
-include requirements*
-recursive-include extras *

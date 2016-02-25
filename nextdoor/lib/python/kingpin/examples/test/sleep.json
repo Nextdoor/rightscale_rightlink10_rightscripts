@@ -1,6 +1,0 @@
-/* Used in Integration Test of the misc.Macro testing. */
-
-{ "desc": "Hey %USER%, I'm Sleeping",
-  "actor": "misc.Sleep",
-  "options": { "sleep": 0.1 }
-}

@@ -72,7 +72,7 @@ def handle_repo(repo):
         print(Fore.BLUE + "{} already exists; removing...".format(dest))
         result = run("rm -rf {}".format(dest), echo=True)
         if result.failed:
-            print(Fore.RED + "Failed while removing {}".format(str(dest)))
+            print(Fore.RED + "Failed while removing {}".format(dest))
             sys.exit(-1)
 
     try:
@@ -97,12 +97,19 @@ def handle_repo(repo):
     # If he 'prep' key is present, run this command as a way of setting up
     # the external dep.
     if 'prep' in repo:
-        print(Fore.BLUE + "Executing specified 'prep' command: {}".format(
-            repo['prep']))
-        result = run(repo['prep'], echo=True)
+        prep = str(repo['prep'])
+        print(Fore.BLUE + "Executing specified 'prep' command: {}".format(prep))
+        result = run(prep, echo=True)
         if result.failed:
             print(Fore.RED + "Failed while prepping!")
             sys.exit(-1)
+
+    # If the 'persist' key is False, remove the directory after 'prep'
+    if 'persist' in repo and False is repo['persist']:
+        cmd = "rm -rf {}".format(dest)
+        result = run(cmd, echo=True)
+        if result.failed:
+            print(Fore.RED + "Failed while removing non-persisted repo!")
 
 
 @task

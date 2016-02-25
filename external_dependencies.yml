@@ -6,7 +6,8 @@ repos:
     source: https://github.com/nextdoor/kingpin
     ref: v0.2.6
     destination: ./nextdoor/lib/python/kingpin
-    prep: (cd ./nextdoor/lib/python/kingpin && python setup.py install --prefix ./ && pip install --build ./ -r ./requirements.txt)
+    prep: (cd ./nextdoor/lib/python/kingpin && make kingpin.zip && mv kingpin.zip ..)
+    persist: false
 
   storage-scripts:
     type: git
