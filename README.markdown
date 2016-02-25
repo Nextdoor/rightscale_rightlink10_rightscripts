@@ -19,11 +19,73 @@ The scripts are also written to provide maximum visibility into their inner
 workings. This manifests primarily in two ways:
 
 1. Whenver a script shells out to a command-line tool it prints both the
-command and the resulting input to both stdout and syslog.
+command and the resulting input to both stdout and syslog. Here's an example:
+
+```ShellSession
+   *** Executing command (1 of 1 attempts): apt-get install -y puppet-common=3.7.4-1puppetlabs1 puppet=3.7.4-1puppetlabs1 ***   
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following extra packages will be installed:
+  debconf-utils facter hiera libaugeas-ruby libruby1.9.1 ruby ruby-augeas
+  ruby-json ruby-shadow ruby1.9.1 virt-what
+Suggested packages:
+  puppet-el vim-puppet ruby-selinux libselinux-ruby1.8 librrd-ruby1.9.1
+  librrd-ruby1.8 ri ruby-dev ruby1.9.1-examples ri1.9.1 graphviz ruby1.9.1-dev
+  ruby-switch
+Recommended packages:
+  rdoc
+The following NEW packages will be installed:
+  debconf-utils facter hiera libaugeas-ruby libruby1.9.1 puppet puppet-common
+  ruby ruby-augeas ruby-json ruby-shadow ruby1.9.1 virt-what
+0 upgraded, 13 newly installed, 0 to remove and 88 not upgraded.
+Need to get 4180 kB of archives.
+After this operation, 21.8 MB of additional disk space will be used.
+Get:1 http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty/main debconf-utils all 1.5.51ubuntu2 [57.4 kB]
+Get:2 http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates/main libruby1.9.1 amd64 1.9.3.484-2ubuntu1.2 [2645 kB]
+Get:3 http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates/main ruby1.9.1 amd64 1.9.3.484-2ubuntu1.2 [35.6 kB]
+Get:4 http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty/main ruby all 1:1.9.3.4 [5334 B]
+...
+```
 
 1. Setting the environment variable 'DEBUG' to any value will result in
 the script printing every available environment variable to both stdout and
-syslog formatted as blob of JSON.
+syslog formatted as blob of JSON. Here's an example:
+
+```ShellSession
+********************************************************************************
+*RS> Recipe: 'nextdoor::puppet-install' ***
+*RS> Starting at 2016-02-25 18:58:07 UTC
+STDERR>
+{
+    "DEBUG": "1",
+    "HOME": "/home/rightlink",
+    "LOGNAME": "root",
+    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "PUPPET_AGENT_USE_CACHED_CATALOG": "false",
+    "PUPPET_AGENT_VERSION": "3.7.4-1puppetlabs1",
+    "PUPPET_CA_SERVER": "<redacted>",
+    "PUPPET_CHALLENGE_PASSWORD": "<hidden credential>",
+    "PUPPET_CUSTOM_FACTS": "fact1=value1,fact2=value2",
+    "PUPPET_ENABLE_REPORTS": "true",
+    "PUPPET_ENVIRONMENT_NAME": "production",
+    "PUPPET_NODE_NAME": "facter",
+    "PUPPET_NODE_NAME_FACT": "hostname",
+    "PUPPET_SERVER_HOSTNAME": "<redacted>",
+    "RS_SELF_HREF": "/api/clouds/6/instances/2DL46EUISCV08",
+    "SHELL": "/bin/bash",
+    "SUDO_COMMAND": "/usr/bin/python3 /var/spool/rightlink/cookbooks/0337c49dc2f1fc8100dc28a3e098d3de/puppet-install.py",
+    "SUDO_GID": "1001",
+    "SUDO_UID": "1001",
+    "SUDO_USER": "rightlink",
+    "TERM": "linux",
+    "USER": "root",
+    "USERNAME": "root",
+    "account": "<redacted>",
+    "api_hostname": "us-3.rightscale.com",
+    "client_id": "<redacted>"
+}
+```
 
 It should be noted that all environment variable inputs for a script are
 documented in *both* the ./nextdoor/metadata.rb and in the comment headers
