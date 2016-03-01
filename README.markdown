@@ -102,6 +102,42 @@ Some of the scripts in the ./nextdoor/lib directory are written to Python 2.7.
 All inputs are environment variables / RightInputs. A 'DEBUG' is available
 for debugging / verbose operation.
 
+### Scripts
+
+The following scripts are available:
+
+* dump-env : A simple script to dump environemnt variables to a JASON hash. This
+script is really more of a sanity check/demo script than anything else.
+
+* elb-connect/elb-disconnect : Connect/Disconnect to an AWS ELB specified as
+an environment variable. For various historical reasons, this script does
+very little heavy lifting itself instead generating input JSON which is fed
+to the embedded copy of the [Kingpin](http://github.com/nextdoor/kingpin) tool.
+
+* mounts : Consolidate and mount unsed instance store space or specified EBS
+volumes into an MDRAID volumes. For various historical reasons, this script
+also does very little heavy-lifting and instead leverages the embedded
+scripts from the [storage-scripts](http://github.com/diranged/storage-scripts) repo.
+
+* hostname : Set the hostname to value specified in environment variable. Also
+does some sanity checking that the name matches Nextdoor naming conventions.
+
+* puppet-install : General Pupppet bootstrapping. Download, install, config
+and launch a Puppet run. By default it will run Puppet 5 times or until
+it gets a clean convergence.
+
+### Supporting tools
+
+* embedded copy of Kingpin(see above)
+
+* embedded copy of the storage-scripts repo(see above)
+
+* nextdoor/lib/utils is a small Python utils library leveraged by the
+various scripts in the 'nextdoor' directory. Things like logging to
+stdout and syslog with a single function call, handling environment
+variable validation, sane handling of execution of subcommands and handling
+their exit and exitcodes, etc.
+
 ## Development Tooling
 
 Various development tooling is embedded in the repo. *None* of which is
