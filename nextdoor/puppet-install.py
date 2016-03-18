@@ -63,7 +63,8 @@ def configure_puppet_external_facts():
         fact_dict = {}
         facts = environ['PUPPET_CUSTOM_FACTS'].split(',')
         for fact in facts:
-            (key, value) = fact.split('=')
+            log_and_stdout("fact: {}".format(str(fact)))
+            (key, value) = fact.split('=', 1)
             fact_dict[key] = value
 
         # construct some YAML and dump it into external fact file

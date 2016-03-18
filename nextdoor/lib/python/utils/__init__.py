@@ -1,3 +1,4 @@
+
 #
 #
 # Python utility functions for RightScale RightScript use.
@@ -220,8 +221,9 @@ def dump_environment(to_var=False):
                 env_log.write("# {}\n".format(time.strftime("%c")))
                 for key, value in environ.items():
                     env_log.write('export {}="{}"\n'.format(key, value))
-        except IOError:
-            pass
+        except IOError as e:
+            log_and_stdout(str(e))
+            log_and_stdout("Failed to create env.sh in cookbook dir...")
 
 
 def apt_get_update(refresh_interval_mins=30):
