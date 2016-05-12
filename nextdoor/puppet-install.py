@@ -23,14 +23,16 @@ import sys
 import string
 import random
 from os import environ
+from socket import getfqdn
 
 from lib.python.utils import detect_debug_mode, assert_command, validate_env
-from lib.python.utils import mkdir_p, normalize_hostname_to_rfc
+from lib.python.utils import mkdir_p
 from lib.python.utils import log_and_stdout, apt_get_update
 
-# Oh my oh my...this is so nasty
+# Oh my oh my...this is so nasty. Better way/place to handle this?
 apt_get_update()
-assert_command("apt-get install -y python3-pip", "Failed to install Python3 pip!")
+assert_command("apt-get install -y python3-pip",
+               "Failed to install Python3 pip!")
 assert_command("pip3 install PyYAML==3.11", "Failed to install PyYAML!")
 import yaml
 
@@ -78,28 +80,6 @@ def configure_puppet_external_facts():
                                                            e.filename, e.strerror))
 
 
-def resolve_puppet_node_name():
-    """
-    Resolve the Puppet node name from either specified value or Puppet Fact.
-    """
-
-    validate_env('PUPPET_NODE_NAME', '^(facter|cert)$')
-    validate_env('PUPPET_NODE_NAME_FACT', '^.+$')
-    puppet_node_name = environ['PUPPET_NODE_NAME']
-    puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
-    puppet_node = ''
-
-    # if we want the node name to come from PUPPET_NODE value...
-    if 'facter' == puppet_node_name and \
-       'puppet_node' == puppet_node_name:
-        validate_env('PUPPET_NODE', '^.+$')
-        puppet_node = normalize_hostname_to_rfc(environ['PUPPET_NODE'])
-
-    # otherwise we'll let the defaults in metadata.rb handle it
-
-    return puppet_node
-
-
 def bootstrap_puppet_agent_config():
     """
     Adjust various settings in puppet.conf and create an external Facts file
@@ -109,36 +89,108 @@ def bootstrap_puppet_agent_config():
 
     for key, regex in {
         'PUPPET_ENVIRONMENT_NAME': dmc,
-        'PUPPET_NODE_NAME_FACT': dmc,
         'PUPPET_SERVER_HOSTNAME': dmc,
         'PUPPET_CA_SERVER': dmc,
         'PUPPET_ENABLE_REPORTS': '^(true|false)$',
+        'PUPPET_NODE_NAME': '^(cert|facter)$',
+        'PUPPET_NODE_NAME_FACT': dmc
     }.items():
         validate_env(key, regex)
 
+    #
+    # The logic around how a node is identified based on:
+    #
+    #  * puppet_node_name
+    #  * puppet_node_name_fact
+    #  * puppet_node_name_value
+    #
+    # is fairly ridiculous. I think the easiest way to document
+    # the madness which follows is to draw a table.
+    #
+    # Those familiar with paleo-Puppet node classification techniques will
+    # note that the above variables are just puppet.conf settings prefixed
+    # with 'puppet_'.
+    #
+    # | puppet_node_name | puppet_node_name_fact | puppet_node_name_value |
+    # |-------------------------------------------------------------------|
+    # | cert             |  $ facter hostname    |     not referenced     |
+    # |-------------------------------------------------------------------|
+    # | facter           |    if 'puppet_node'   |  ^.+$ aka not nuthin'  |
+    # |                  |------------------------------------------------|
+    # |                  |   if ! 'puppet_node'  |     not referenced     |
+    # ---------------------------------------------------------------------
+    #
+
+    puppet_node_name = environ['PUPPET_NODE_NAME']
+    puppet_node_name_fact = environ['PUPPET_NODE_NAME_FACT']
+    puppet_node_name_value = ''
+
+    log_and_stdout(
+        "Puppet node name resolution:: puppet_node_name: {}".format(puppet_node_name))
+
+    if 'cert' == puppet_node_name:
+
+        if 'hostname' != puppet_node_name_fact:
+            log_and_stdout(
+                "{} => {} forced to {} => {}".format(
+                    'node_name_fact', puppet_node_name,
+                    'node_name_fact', 'hostname'))
+            puppet_node_name_fact = 'hostname'
+
+    if 'facter' == puppet_node_name:
+
+        if 'puppet_node' == puppet_node_name_fact:
+            validate_env('PUPPET_NODE_NAME_VALUE', dmc)
+            puppet_node_name_value = environ['PUPPET_NODE_NAME_VALUE']
+            log_and_stdout(
+                "puppet_node => {}".format(puppet_node_name_value))
+
+        else:
+            if '' != puppet_node_name_value:
+                log_and_stdout(
+                    "Ignoring PUPPET_NODE_NAME_VALUE because PUPPET_NAME_FACT != 'puppet_node'")
+
+    #
+    # If all of the validations and fiddling about with puppet_node has
+    # worked out then let's update the puppet.conf and some external facts.
+    #
+
+    # puppet.conf settings
     puppet_settings = {
         'environment': environ['PUPPET_ENVIRONMENT_NAME'],
-        'node_name_fact': environ['PUPPET_NODE_NAME_FACT'],
         'server': environ['PUPPET_SERVER_HOSTNAME'],
         'ca_server': environ['PUPPET_CA_SERVER'],
-        'report': environ['PUPPET_ENABLE_REPORTS']
+        'report': environ['PUPPET_ENABLE_REPORTS'],
+        'node_name': puppet_node_name,
+        'node_name_fact': puppet_node_name_fact,
     }
 
-    puppet_node_name = resolve_puppet_node_name()
-    if '' != puppet_node_name:
-        puppet_settings = puppet_settings.update({'node': puppet_node_name})
+    external_facts = {
+        'puppet_environment': environ['PUPPET_ENVIRONMENT_NAME'],
+        'puppet_server': environ['PUPPET_SERVER_HOSTNAME'],
+        'puppet_ca_server': environ['PUPPET_CA_SERVER'],
+    }
+
+    if 'cert' == puppet_node_name:
+        pass  # just here for completeness and transparency
+
+    elif 'facter' == puppet_node_name:
+        if 'puppet_node' == puppet_node_name_fact:
+            # This could live in puppet.conf as node_name_value but this
+            # makes it visible via 'facter puppet_node'.
+            external_facts['puppet_node'] = "{}|{}".format(
+                puppet_node_name_value, getfqdn())
+        else:
+            pass  # this here for completeness and transparency
 
     for setting, value in puppet_settings.items():
-        assert_command('/usr/bin/puppet config set {} {} --section agent'.format(setting, value),
-                       'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
+        assert_command(
+            '/usr/bin/puppet config set {} {} --section agent'.format(
+                setting, value),
+            'Failed to set \'{}\' to \'{}\' in puppet.conf!'.format(setting, value))
 
+    # Drop some external Facts for Puppet settings
     try:
-        # Drop some external Facts for Puppet settings
-        external_facts = {}
-        for key in ['environment', 'node', 'server', 'ca_server']:
-            if key in puppet_settings:
-                external_facts['puppet_' + key] = puppet_settings[key]
-
         mkdir_p('/etc/facter/facts.d')
         with open('/etc/facter/facts.d/nextdoor_puppet.yaml', 'w') as outfile:
             outfile.write(

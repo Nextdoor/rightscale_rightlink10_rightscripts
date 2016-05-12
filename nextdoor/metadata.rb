@@ -201,33 +201,31 @@ attribute "PUPPET_ENVIRONMENT_NAME",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 
-attribute "PUPPET_NODE",
-          :display_name => "PUPPET_NODE",
-          :description  => "If specified along with"\
-                           " PUPPET_NODE_FACT='puppet_node', set the Puppet"\
-                           " node name to this value.",
-          :required     => "recommended",
-          :category     => "NEXTDOOR: PUPPET SETTINGS",
-          :recipes      => [ "nextdoor::puppet-install" ]
-
 attribute "PUPPET_NODE_NAME",
           :display_name => "PUPPET_NODE_NAME",
-          :description  => "Override Puppet node name specified in"\
-                           " PUPPET_NODE via specified method: <cert|facter>."\
-                           " If 'facter', use the value returned by execution"\
-                           " of PUPPET_NODE_FACT.",
+          :description  => "Maps to puppet.conf setting 'node_name'."\
+                           "https://docs.puppet.com/puppet/latest/reference/configuration.html#nodename",
+          :required     => "optional",
           :default      => "facter",
           :choice       => [ "facter", "cert" ],
-          :required     => "optional",
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 
 attribute "PUPPET_NODE_NAME_FACT",
           :display_name => "PUPPET_NODE_NAME_FACT",
-          :description  => "PUPPET_NODE_NAME will be generated via the"\
-                           " specified Facter fact.",
+          :description  => "Maps to puppet.conf setting 'node_name_fact'."\
+                           "https://docs.puppet.com/puppet/latest/reference/configuration.html#nodenamefact",
           :required     => "optional",
-          :default      => "hostname",
+          :default      => "puppet_node",
+          :category     => "NEXTDOOR: PUPPET SETTINGS",
+          :recipes      => [ "nextdoor::puppet-install" ]
+
+attribute "PUPPET_NODE_NAME_VALUE",
+          :display_name => "PUPPET_NODE_NAME_VALUE",
+          :description  => "Maps to the puppet.conf setting 'node_name_value'."\
+                           "https://docs.puppet.com/puppet/latest/reference/configuration.html#nodenamevalue",
+          :required     => "recommended",
+          :default      => nil,
           :category     => "NEXTDOOR: PUPPET SETTINGS",
           :recipes      => [ "nextdoor::puppet-install" ]
 

@@ -43,9 +43,11 @@ def elb_connect():
         # Extract a temp copy of Kingpin into /tmp before doing the ELB reg.
         # This *should* be possible to do without extracting Kingpin from the
         # zip *EXCEPT* boto has problems referencing some templates within
-        # a zip file which it does not have if the files live in the filesystem.
+        # a zip file which it does not have if the files live in the
+        # filesystem.
         apt_get_update()
-        assert_command('apt-get install -y unzip', 'Failed to install unzip utility!')
+        assert_command('apt-get install -y unzip',
+                       'Failed to install unzip utility!')
         assert_command('mkdir -p /tmp/kingpin',
                        'Failed to create temporary directorty for Kingping!')
         assert_command('unzip -o -u ./lib/python/kingpin.zip -d /tmp/kingpin',
@@ -66,7 +68,8 @@ def elb_connect():
                 kp_template = Template(
                     open(template_file, 'r').read()).safe_substitute(environ)
 
-                log_and_stdout("Content of Kingpin script is:\n{}".format(kp_template))
+                log_and_stdout(
+                    "Content of Kingpin script is:\n{}".format(kp_template))
 
                 kp_script.write(kp_template.encode('utf-8'))
                 kp_script.flush()
@@ -75,7 +78,8 @@ def elb_connect():
                 log_and_stdout("Kingpin script created.".format(kp_template))
 
                 environ['SKIP_DRY'] = "1"
-                cmd = "python2.7 /tmp/kingpin --debug -j {}".format(kp_script.name)
+                cmd = "python2.7 /tmp/kingpin --debug -j {}".format(
+                    kp_script.name)
                 assert_command(cmd, "Failed during Kingpin run!")
 
         except KeyError as e:

@@ -79,9 +79,6 @@ def install_dependencies():
     utils.assert_command('apt-get install -y augeas-tools',
                          'Failed to install Augeas!')
 
-    utils.assert_command('apt-get install -y htop',
-                         'Failed to install htop!')
-
 
 def main():
     """
