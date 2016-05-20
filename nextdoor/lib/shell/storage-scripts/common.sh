@@ -77,8 +77,8 @@ install_apt_deps() {
   if ! test "$missing"; then return; fi
 
   # Install the Apt dependencies now
-  export DEBIAN_FRONTEND='noninteractive'
-  export DEBCONF_NONINTERACTIVE_SEEN='true'
+  export DEBIAN_FRONTEND="noninteractive"
+  export DEBCONF_NONINTERACTIVE="true"
   apt-get -qq update || warn "apt-get update failed ... attempting package install anyways"
   dry_exec apt-get -qq install $missing
 }
@@ -248,6 +248,18 @@ discover_md_conf() {
 create_md_volume() {
   PARTITION_COUNT=$(echo "${AVAILABLE_PARTITIONS}" | wc -w)
   info "Available partitions ($PARTITION_COUNT): ${AVAILABLE_PARTITIONS}"
+
+  # If the partition(s) to be used in the RAID are mounted, unmount them and remove
+  # from /etc/fstab
+  for partition in ${AVAILABLE_PARTITIONS}; do
+      info "Checking ${partition} for existing mounts...."
+      if [ $(mount | egrep -c "^${partition} ") -ge 1 ]; then
+          info "Parition ${partition} is currently mounted. Umounting..."
+          dry_exec "umount -v -f ${partition}"
+	  info "Removing the mount entry for ${partition} from /etc/fstab..."
+	  dry_exec "augtool -b rm '/files/etc/fstab/*[spec=\"${partition}\"]'"
+      fi
+  done
 
   dry_exec "yes | mdadm --create --force --verbose ${MD_VOL} --chunk=${BLOCK_SIZE} --level=${RAID_LEVEL} --name=raid-setup-${VERSION} --raid-devices=${PARTITION_COUNT} ${AVAILABLE_PARTITIONS}"
   dry_exec "echo DEVICE partitions > ${MD_CONF}"

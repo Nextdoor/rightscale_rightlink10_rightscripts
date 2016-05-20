@@ -14,6 +14,6 @@ repos:
 
   storage-scripts:
     type: git
-    source: https://github.com/nrvale0/storage-scripts
-    ref: mute_debconf
+    source: https://github.com/nextdoor/storage_scripts
+    ref: v1.0.0
     destination: ./nextdoor/lib/shell/storage-scripts

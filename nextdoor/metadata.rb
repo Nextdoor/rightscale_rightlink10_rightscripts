@@ -130,7 +130,7 @@ attribute "MOUNT_OPTS",
           :description => "With which options should the storage be mounted?",
           :required => "optional",
           :type => "string",
-          :default => "default,noatime,nodiratime,nobootwait",
+          :default => "defaults,noatime,nodiratime,nobootwait",
           :recipes => ['nextdoor::mounts']
 
 attribute "PUPPET_AGENT_USE_CACHED_CATALOG",
