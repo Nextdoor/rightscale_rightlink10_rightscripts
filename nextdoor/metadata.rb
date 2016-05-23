@@ -2,7 +2,7 @@ name        "nextdoor"
 maintainer  "Nextdoor.com"
 license     "see LICENSE file in repository root"
 description "Nextdoor.com RL10 (only!) RightScripts"
-version     '0.1.0'
+version     '1.0.0'
 
 recipe      "nextdoor::dump-env", "Print environment variables for debugging"
 recipe      "nextdoor::mounts", "Configure /mnt"
