@@ -319,6 +319,18 @@ def configure_puppet_agent():
     bootstrap_puppet_agent_config()
 
 
+def clean_rightscale_tags():
+    """
+    Upon succcesful Puppet convergence, remove the pre-shared key tag used
+    for autosigning and flip Puppet state tag from 'waiting' to 'signed'.
+    """
+    assert_command("puppet resource rs_tag nd:puppet_state value='signed'",
+                   "Failed when flipping nd:puppet_state value to 'signed'.")
+
+    assert_command("puppet resource rs_tag nd:puppet_secret ensure=absent",
+                   "Failed when removing nd:puppet_secret!")
+
+
 def main():
     """
     The Fun Starts Here.
@@ -330,6 +342,7 @@ def main():
         configure_puppet_agent()
         create_puppet_agent_cert()
         run_puppet_agent()
+        clean_rightscale_tags()
     else:
         log_and_stdout(
             "   *** Puppet probably bootstrapped previously. Exiting... ***   ")
